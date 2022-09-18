@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/assembler/tniasm.exe</file>
+        <file>assets/emulator/BASIC.bin</file>
+        <file>assets/emulator/Default.fnt</file>
+        <file>assets/emulator/fontc.exe</file>
+        <file>assets/emulator/libjpeg-8.dll</file>
+        <file>assets/emulator/libpng16-16.dll</file>
+        <file>assets/emulator/libwebp-7.dll</file>
+        <file>assets/emulator/libwinpthread-1.dll</file>
+        <file>assets/emulator/m2000.exe</file>
+        <file>assets/emulator/m2000.txt</file>
+        <file>assets/emulator/P2000.cas</file>
+        <file>assets/emulator/p2000rom.bin</file>
+        <file>assets/emulator/zlib1.dll</file>
+    </qresource>
+</RCC>
