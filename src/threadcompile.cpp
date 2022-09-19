@@ -8,7 +8,7 @@ void ThreadCompile::run() {
     QProcess* process = this->build_process();
 
     process->start();
-    qDebug() << "Blender process launched";
+    qDebug() << "Compilation process launched";
     if(process->waitForStarted(1000)) {
         qDebug() << "Compilation started";
         if(process->waitForFinished(60 * 60 * 1000)) { // timeout at one hour
@@ -71,7 +71,7 @@ QString ThreadCompile::build_compilation_directory() {
     QTemporaryDir dir;
     dir.setAutoRemove(false); // do not immediately remove
     if(dir.isValid()) {
-        // write Blender axes template file
+        // copy assembler executable
         QFile assembler_executable(":/assets/assembler/tniasm.exe");
         if(!assembler_executable.open(QIODevice::ReadOnly)) {
             throw std::runtime_error("Could not open assembler file from assets.");

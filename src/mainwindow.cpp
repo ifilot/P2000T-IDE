@@ -57,6 +57,12 @@ void MainWindow::build_menu() {
     menuBuild->addAction(action_compile);
     connect(action_compile, &QAction::triggered, this, &MainWindow::slot_compile);
 
+    // Run
+    QAction *action_run = new QAction(menuBuild);
+    action_run->setText(tr("Run"));
+    menuBuild->addAction(action_run);
+    connect(action_run, &QAction::triggered, this, &MainWindow::slot_run);
+
     // quit
     QAction *action_quit = new QAction(menuFile);
     action_quit->setText(tr("Quit"));
@@ -91,6 +97,16 @@ void MainWindow::slot_compile() {
     compile_job->set_source(source);
     connect(compile_job.get(), SIGNAL(signal_compilation_done()), this, SLOT(slot_compilation_done()));
     compile_job->start();
+}
+
+/**
+ * @brief compile file
+ */
+void MainWindow::slot_run() {
+    ThreadRun* runthread = new ThreadRun();
+    runthread->set_mcode(this->compile_job->get_mcode());
+    connect(runthread, SIGNAL(signal_run_complete(void*)), this, SLOT(slot_run_complete(void*)));
+    runthread->start();
 }
 
 /**
@@ -130,6 +146,14 @@ void MainWindow::slot_compilation_done() {
     QHexView::DataStorageArray* mcode = new QHexView::DataStorageArray(this->compile_job->get_mcode());
     this->hex_viewer->setData(mcode);
     this->hex_viewer->viewport()->update();
+}
+
+/**
+ * @brief void slot_run_complete
+ */
+void MainWindow::slot_run_complete(void* pointer) {
+    qDebug() << "Cleaning up run object";
+    delete static_cast<ThreadRun*>(pointer);
 }
 
 MainWindow::~MainWindow() {

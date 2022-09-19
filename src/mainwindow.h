@@ -13,6 +13,7 @@
 #include "qhexview.h"
 #include "config.h"
 #include "threadcompile.h"
+#include "threadrun.h"
 
 class MainWindow : public QMainWindow
 {
@@ -42,6 +43,11 @@ private slots:
     void slot_compile();
 
     /**
+     * @brief compile a file
+     */
+    void slot_run();
+
+    /**
      * @brief exit program
      */
     void slot_exit();
@@ -55,5 +61,10 @@ private slots:
      * @brief void slot_compilation_done
      */
     void slot_compilation_done();
+
+    /**
+     * @brief void slot_compilation_done
+     */
+    void slot_run_complete(void*);
 };
 #endif // MAINWINDOW_H

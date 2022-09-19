@@ -12,13 +12,15 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/qhexview.cpp \
-    src/threadcompile.cpp
+    src/threadcompile.cpp \
+    src/threadrun.cpp
 
 HEADERS += \
     src/config.h \
     src/mainwindow.h \
     src/qhexview.h \
-    src/threadcompile.h
+    src/threadcompile.h \
+    src/threadrun.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
