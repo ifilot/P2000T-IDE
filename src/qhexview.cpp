@@ -141,7 +141,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 
     painter.fillRect(event->rect(), this->palette().color(QPalette::Base));
 
-    QColor addressAreaColor = QColor(0xd4, 0xd4, 0xd4, 0xff);
+    QColor addressAreaColor = QColor(0x20, 0x20, 0x20, 0xff);
     painter.fillRect(QRect(m_posAddr, event->rect().top(), m_posHex - GAP_ADR_HEX + 2 , height()), addressAreaColor);
 
     int linePos = m_posAscii - (GAP_HEX_ASCII / 2);
@@ -149,7 +149,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 
     painter.drawLine(linePos, event->rect().top(), linePos, height());
 
-    painter.setPen(Qt::black);
+    painter.setPen(Qt::gray);
 
     int yPosStart = m_charHeight;
 

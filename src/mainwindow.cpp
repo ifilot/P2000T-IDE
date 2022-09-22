@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     font.setFixedPitch(true);
     font.setPointSize(10);
     text_editor->setFont(font);
+    this->highlighter = new AssemblyHighlighter(this->text_editor->document());
 
     // set tab stop
     const int tabStop = 4;
@@ -33,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     top_layout->addWidget(this->log_viewer);
 
     this->build_menu();
+    this->load_theme();
 }
 
 void MainWindow::build_menu() {
@@ -85,7 +87,16 @@ void MainWindow::build_menu() {
  * @brief open a file
  */
 void MainWindow::slot_open() {
-
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    "",
+                                                    tr("Assembly source files (*.asm)"));
+    // write source file
+    QFile sourcefile(filename);
+    if(sourcefile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QByteArray contents = sourcefile.readAll();
+        this->text_editor->setPlainText(contents);
+    }
+    sourcefile.close();
 }
 
 /**
@@ -159,3 +170,17 @@ void MainWindow::slot_run_complete(void* pointer) {
 MainWindow::~MainWindow() {
 }
 
+/**
+ * @brief      Loads a theme.
+ */
+void MainWindow::load_theme() {
+    // load theme
+    QFile f(":/assets/themes/darkorange/darkorange.qss");
+    if (!f.exists())   {
+        throw std::runtime_error("Cannot open theme file.");
+    } else {
+        f.open(QFile::ReadOnly | QFile::Text);
+        QTextStream ts(&f);
+        qApp->setStyleSheet(ts.readAll());
+    }
+}

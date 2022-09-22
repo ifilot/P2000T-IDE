@@ -13,5 +13,9 @@
         <file>assets/emulator/P2000.cas</file>
         <file>assets/emulator/p2000rom.bin</file>
         <file>assets/emulator/zlib1.dll</file>
+        <file>assets/themes/darkorange/darkorange.qss</file>
+        <file>assets/themes/darkorange/icons/checkbox.png</file>
+        <file>assets/themes/darkorange/icons/down_arrow.png</file>
+        <file>assets/themes/darkorange/icons/handle.png</file>
     </qresource>
 </RCC>

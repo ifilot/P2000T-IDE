@@ -9,11 +9,13 @@
 #include <QPlainTextEdit>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include "qhexview.h"
 #include "config.h"
 #include "threadcompile.h"
 #include "threadrun.h"
+#include "assemblyhighlighter.h"
 
 class MainWindow : public QMainWindow
 {
@@ -23,6 +25,7 @@ private:
     QPlainTextEdit* log_viewer;
     QHexView* hex_viewer;
     std::unique_ptr<ThreadCompile> compile_job;
+    AssemblyHighlighter* highlighter;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -30,6 +33,8 @@ public:
 
 private:
     void build_menu();
+
+    void load_theme();
 
 private slots:
     /**
