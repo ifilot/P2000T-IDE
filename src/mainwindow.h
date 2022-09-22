@@ -10,6 +10,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QLabel>
 
 #include "qhexview.h"
 #include "config.h"
@@ -22,6 +23,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 private:
     QTextEdit* text_editor;
+    QLabel* label_active_filename;
     QPlainTextEdit* log_viewer;
     QHexView* hex_viewer;
     std::unique_ptr<ThreadCompile> compile_job;
@@ -41,6 +43,16 @@ private slots:
      * @brief open a file
      */
     void slot_open();
+
+    /**
+     * @brief save a file
+     */
+    void slot_save();
+
+    /**
+     * @brief save a file
+     */
+    void slot_save_as();
 
     /**
      * @brief compile a file
@@ -71,5 +83,10 @@ private slots:
      * @brief void slot_compilation_done
      */
     void slot_run_complete(void*);
+
+    /**
+     * @brief slot when text editor has changed
+     */
+    void slot_editor_onchange();
 };
 #endif // MAINWINDOW_H

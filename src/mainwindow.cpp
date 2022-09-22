@@ -10,6 +10,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     w->setLayout(top_layout);
 
     // left screen -> text editor
+    QWidget* parent_widget_text_edit = new QWidget();
+    QVBoxLayout* layout_text_edit = new QVBoxLayout();
+    parent_widget_text_edit->setLayout(layout_text_edit);
+
+    // add active file label
+    this->label_active_filename = new QLabel("untitled");
+    layout_text_edit->addWidget(this->label_active_filename);
+
+    // add text editor
     this->text_editor = new QTextEdit();
     QFont font;
     font.setFamily("Courier");
@@ -23,7 +32,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     const int tabStop = 4;
     QFontMetrics metrics(font);
     text_editor->setTabStopWidth(tabStop * metrics.width(' '));
-    top_layout->addWidget(this->text_editor);
+    layout_text_edit->addWidget(this->text_editor);
+    connect(this->text_editor, SIGNAL(textChanged()), this, SLOT(slot_editor_onchange()));
+
+    // add text editor parent widget
+    top_layout->addWidget(parent_widget_text_edit);
 
     // middle screen -> hex result
     this->hex_viewer = new QHexView();
@@ -53,16 +66,25 @@ void MainWindow::build_menu() {
     menuFile->addAction(action_open);
     connect(action_open, &QAction::triggered, this, &MainWindow::slot_open);
 
+    // save
+    QAction *action_save = new QAction(menuFile);
+    action_save->setText(tr("Save"));
+    action_save->setShortcuts(QKeySequence::Save);
+    menuFile->addAction(action_save);
+    connect(action_save, &QAction::triggered, this, &MainWindow::slot_save);
+
     // Compile
     QAction *action_compile = new QAction(menuBuild);
     action_compile->setText(tr("Compile"));
     menuBuild->addAction(action_compile);
+    action_compile->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B));
     connect(action_compile, &QAction::triggered, this, &MainWindow::slot_compile);
 
     // Run
     QAction *action_run = new QAction(menuBuild);
     action_run->setText(tr("Run"));
     menuBuild->addAction(action_run);
+    action_run->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
     connect(action_run, &QAction::triggered, this, &MainWindow::slot_run);
 
     // quit
@@ -90,6 +112,12 @@ void MainWindow::slot_open() {
     QString filename = QFileDialog::getOpenFileName(this, tr("Open File"),
                                                     "",
                                                     tr("Assembly source files (*.asm)"));
+
+    // do nothing if user has cancelled
+    if(filename.isEmpty()) {
+        return;
+    }
+
     // write source file
     QFile sourcefile(filename);
     if(sourcefile.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -97,6 +125,45 @@ void MainWindow::slot_open() {
         this->text_editor->setPlainText(contents);
     }
     sourcefile.close();
+
+    this->label_active_filename->setText(filename);
+}
+
+/**
+ * @brief save a file
+ */
+void MainWindow::slot_save() {
+    // do not save if there are no changed
+    if(!this->label_active_filename->text().endsWith('*')) {
+        return;
+    }
+
+    // ask user where to save file
+    if(this->label_active_filename->text().startsWith("untitled")) {
+        this->slot_save_as();
+        return;
+    }
+
+    // remove asterisk
+    QString url = this->label_active_filename->text();
+    url.resize(this->label_active_filename->text().size()-1);
+    QFile sourcefile(url);
+    if(sourcefile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream stream(&sourcefile);
+        stream << this->text_editor->toPlainText();
+    }
+    sourcefile.close();
+    qDebug() << "Saved sourcecode to " << url;
+
+    // rewrite label
+    this->label_active_filename->setText(url);
+}
+
+/**
+ * @brief save a file
+ */
+void MainWindow::slot_save_as() {
+
 }
 
 /**
@@ -182,5 +249,14 @@ void MainWindow::load_theme() {
         f.open(QFile::ReadOnly | QFile::Text);
         QTextStream ts(&f);
         qApp->setStyleSheet(ts.readAll());
+    }
+}
+
+/**
+ * @brief slot when text editor has changed
+ */
+void MainWindow::slot_editor_onchange() {
+    if(!this->label_active_filename->text().endsWith('*')) {
+        this->label_active_filename->setText(this->label_active_filename->text() + '*');
     }
 }
