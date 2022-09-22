@@ -6,9 +6,23 @@ AssemblyHighlighter::AssemblyHighlighter(QTextDocument *parent) : QSyntaxHighlig
 
     this->keyword_format.setForeground(Qt::cyan);
     const QString keyword_patterns[] = {
-        QStringLiteral("\\borg\\b"), QStringLiteral("\\badd\\b"), QStringLiteral("\\band\\b"),
-        QStringLiteral("\\bor\\b"), QStringLiteral("\\bld\\b"), QStringLiteral("\\bDB\\b"),
-        QStringLiteral("\\bjp\\b")
+        QStringLiteral("\\borg\\b"),
+        QStringLiteral("\\badd\\b"),
+        QStringLiteral("\\band\\b"),
+        QStringLiteral("\\bor\\b"),
+        QStringLiteral("\\bld\\b"),
+        QStringLiteral("\\bDB\\b"),
+        QStringLiteral("\\bjp\\b"),
+        QStringLiteral("\\bjr\\b"),
+        QStringLiteral("\\binc\\b"),
+        QStringLiteral("\\bcp\\b"),
+        QStringLiteral("\\bret\\b"),
+        QStringLiteral("\\bpush\\b"),
+        QStringLiteral("\\bpop\\b"),
+        QStringLiteral("\\bldir\\b"),
+        QStringLiteral("\\bdec\\b"),
+        QStringLiteral("\\bcall\\b"),
+        QStringLiteral("\\brra\\b"),
     };
     for (const QString &pattern : keyword_patterns) {
         rule.pattern = QRegularExpression(pattern);

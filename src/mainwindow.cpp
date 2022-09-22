@@ -73,6 +73,13 @@ void MainWindow::build_menu() {
     menuFile->addAction(action_save);
     connect(action_save, &QAction::triggered, this, &MainWindow::slot_save);
 
+    // save as
+    QAction *action_save_as = new QAction(menuFile);
+    action_save_as->setText(tr("Save as"));
+    action_save_as->setShortcuts(QKeySequence::SaveAs);
+    menuFile->addAction(action_save_as);
+    connect(action_save_as, &QAction::triggered, this, &MainWindow::slot_save_as);
+
     // Compile
     QAction *action_compile = new QAction(menuBuild);
     action_compile->setText(tr("Compile"));
@@ -140,8 +147,7 @@ void MainWindow::slot_save() {
 
     // ask user where to save file
     if(this->label_active_filename->text().startsWith("untitled")) {
-        this->slot_save_as();
-        return;
+        return this->slot_save_as();
     }
 
     // remove asterisk
@@ -163,7 +169,24 @@ void MainWindow::slot_save() {
  * @brief save a file
  */
 void MainWindow::slot_save_as() {
+    QString filename = QFileDialog::getSaveFileName(this, tr("Open File"),
+                                                    "",
+                                                    tr("Assembly source files (*.asm)"));
 
+    // do nothing if user has cancelled
+    if(filename.isEmpty()) {
+        return;
+    }
+
+    QFile sourcefile(filename);
+    if(sourcefile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream stream(&sourcefile);
+        stream << this->text_editor->toPlainText();
+    }
+    qDebug() << "Saved sourcecode to new file " << filename;
+
+    // rewrite label
+    this->label_active_filename->setText(filename);
 }
 
 /**
