@@ -58,6 +58,10 @@ class QHexView: public QAbstractScrollArea
         QHexView(QWidget *parent = 0);
         ~QHexView();
 
+        inline const QByteArray& get_data() const {
+            return this->m_pdata->getData(0, this->m_pdata->size());
+        }
+
     public slots:
         void setData(DataStorage *pData);
         void clear();

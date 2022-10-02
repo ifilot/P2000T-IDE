@@ -7,10 +7,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // set main VBoxLayout
     QHBoxLayout* top_layout = new QHBoxLayout();
+    top_layout->setMargin(5);
     w->setLayout(top_layout);
 
+    //
     // left screen -> text editor
-    QWidget* parent_widget_text_edit = new QWidget();
+    //
+    QGroupBox* parent_widget_text_edit = new QGroupBox("Source code editor");
+    parent_widget_text_edit->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     QVBoxLayout* layout_text_edit = new QVBoxLayout();
     parent_widget_text_edit->setLayout(layout_text_edit);
 
@@ -38,16 +42,44 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // add text editor parent widget
     top_layout->addWidget(parent_widget_text_edit);
 
+    //
     // middle screen -> hex result
+    ///
+    QGroupBox* hex_viewer_container = new QGroupBox("Machine code viewer");
+    hex_viewer_container->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    QVBoxLayout* layout_hexviewer = new QVBoxLayout();
+    hex_viewer_container->setLayout(layout_hexviewer);
     this->hex_viewer = new QHexView();
-    top_layout->addWidget(this->hex_viewer);
+    layout_hexviewer->addWidget(this->hex_viewer);
+    top_layout->addWidget(hex_viewer_container);
 
-    // right screen -> log
+    //
+    // right screen -> log and upload interface
+    //
+    QWidget* widget_right_screen_container = new QWidget();
+    QVBoxLayout* widget_right_screen_layout = new QVBoxLayout();
+    widget_right_screen_container->setLayout(widget_right_screen_layout);
+
+    // logviewer
     this->log_viewer = new QPlainTextEdit();
-    top_layout->addWidget(this->log_viewer);
+    this->add_groupbox_and_widget("Log", widget_right_screen_layout, this->log_viewer);
+    top_layout->addWidget(widget_right_screen_container);
+
+    // serial interface
+    this->serial_widget = new SerialWidget();
+    this->add_groupbox_and_widget("P2000T Cartridge Interface", widget_right_screen_layout, this->serial_widget);
+    top_layout->addWidget(widget_right_screen_container);
+
+    // set statusbar
+    statusBar()->showMessage(tr("Ready"));
+
+    // connect messages to statusbar
+    connect(this->serial_widget, SIGNAL(signal_emit_statusbar_message(const QString&)), statusBar(), SLOT(showMessage(const QString&)));
+    connect(this->serial_widget, SIGNAL(signal_data_read()), this, SLOT(slot_serial_parse_data()));
+    connect(this->serial_widget, SIGNAL(signal_get_data()), this, SLOT(slot_serial_assert_data()));
 
     this->build_menu();
-    this->load_theme();
+    //this->load_theme();
 }
 
 void MainWindow::build_menu() {
@@ -80,6 +112,14 @@ void MainWindow::build_menu() {
     menuFile->addAction(action_save_as);
     connect(action_save_as, &QAction::triggered, this, &MainWindow::slot_save_as);
 
+    // save machine code
+    menuFile->addSeparator();
+    QAction *action_save_machine_code = new QAction(menuFile);
+    action_save_machine_code->setText(tr("Save machine code"));
+    action_save_machine_code->setShortcuts(QKeySequence::SaveAs);
+    menuFile->addAction(action_save_machine_code);
+    connect(action_save_machine_code, &QAction::triggered, this, &MainWindow::slot_save_machine_code);
+
     // Compile
     QAction *action_compile = new QAction(menuBuild);
     action_compile->setText(tr("Compile"));
@@ -95,6 +135,7 @@ void MainWindow::build_menu() {
     connect(action_run, &QAction::triggered, this, &MainWindow::slot_run);
 
     // quit
+    menuFile->addSeparator();
     QAction *action_quit = new QAction(menuFile);
     action_quit->setText(tr("Quit"));
     action_quit->setShortcuts(QKeySequence::Quit);
@@ -190,9 +231,35 @@ void MainWindow::slot_save_as() {
 }
 
 /**
+ * @brief save machine code
+ */
+void MainWindow::slot_save_machine_code() {
+    QString filename = QFileDialog::getSaveFileName(this, tr("Open File"),
+                                                    "",
+                                                    tr("Assembly source files (*.bin)"));
+
+    // do nothing if user has cancelled
+    if(filename.isEmpty()) {
+        return;
+    }
+
+    QFile sourcefile(filename);
+    if(sourcefile.open(QIODevice::WriteOnly)) {
+        sourcefile.write(this->hex_viewer->get_data());
+    }
+    qDebug() << "Saved sourcecode to new file " << filename;
+
+    // rewrite label
+    this->label_active_filename->setText(filename);
+}
+
+/**
  * @brief compile file
  */
 void MainWindow::slot_compile() {
+    // always save before compiling
+    this->slot_save();
+
     QString source = this->text_editor->toPlainText();
     this->compile_job = std::make_unique<ThreadCompile>();
     compile_job->set_source(source);
@@ -276,10 +343,39 @@ void MainWindow::load_theme() {
 }
 
 /**
+ * @brief Convenience function to add GroupBox and widget
+ */
+void MainWindow::add_groupbox_and_widget(const QString& name, QLayout* layout, QWidget* widget) {
+    QGroupBox* groupbox_container = new QGroupBox(name);
+    QVBoxLayout* groupbox_layout = new QVBoxLayout();
+    groupbox_container->setLayout(groupbox_layout);
+    groupbox_layout->addWidget(widget);
+    layout->addWidget(groupbox_container);
+}
+
+/**
  * @brief slot when text editor has changed
  */
 void MainWindow::slot_editor_onchange() {
     if(!this->label_active_filename->text().endsWith('*')) {
         this->label_active_filename->setText(this->label_active_filename->text() + '*');
     }
+}
+
+/**
+ * @brief Get data from SerialWidget class and parse to hex editor
+ */
+void MainWindow::slot_serial_parse_data() {
+    auto data = this->serial_widget->get_data();
+    QHexView::DataStorageArray* mcode = new QHexView::DataStorageArray(data);
+    this->hex_viewer->setData(mcode);
+    this->hex_viewer->viewport()->update();
+}
+
+/**
+ * @brief Parse data from Hex Editor to SerialWidget class
+ */
+void MainWindow::slot_serial_assert_data() {
+    auto data = this->hex_viewer->get_data();
+    this->serial_widget->set_flash_data(data);
 }

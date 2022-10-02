@@ -11,12 +11,15 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QLabel>
+#include <QStatusBar>
+#include <QGroupBox>
 
 #include "qhexview.h"
 #include "config.h"
 #include "threadcompile.h"
 #include "threadrun.h"
 #include "assemblyhighlighter.h"
+#include "serialwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -26,6 +29,7 @@ private:
     QLabel* label_active_filename;
     QPlainTextEdit* log_viewer;
     QHexView* hex_viewer;
+    SerialWidget* serial_widget;
     std::unique_ptr<ThreadCompile> compile_job;
     AssemblyHighlighter* highlighter;
 
@@ -37,6 +41,10 @@ private:
     void build_menu();
 
     void load_theme();
+
+    void add_groupbox_and_widget(const QString& name,
+                                 QLayout* layout,
+                                 QWidget* widget);
 
 private slots:
     /**
@@ -53,6 +61,11 @@ private slots:
      * @brief save a file
      */
     void slot_save_as();
+
+    /**
+     * @brief save machine code
+     */
+    void slot_save_machine_code();
 
     /**
      * @brief compile a file
@@ -88,5 +101,15 @@ private slots:
      * @brief slot when text editor has changed
      */
     void slot_editor_onchange();
+
+    /**
+     * @brief Get data from SerialWidget class and parse to hex editor
+     */
+    void slot_serial_parse_data();
+
+    /**
+     * @brief Parse data from Hex Editor to SerialWidget class
+     */
+    void slot_serial_assert_data();
 };
 #endif // MAINWINDOW_H
