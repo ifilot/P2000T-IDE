@@ -329,7 +329,7 @@ void MainWindow::slot_about() {
     message_box.setText(PROGRAM_NAME
                         " version "
                         PROGRAM_VERSION
-                        ".\n\nAuthor:\nIvo Filot <i.a.w.filot@tue.nl>\n\n"
+                        ".\n\nAuthor:\nIvo Filot <ivo@ivofilot.nl>\n\n"
                         PROGRAM_NAME " is licensed under the GPLv3 license.\n\n"
                         PROGRAM_NAME " is dynamically linked to Qt, which is licensed under LGPLv3.\n");
     message_box.setIcon(QMessageBox::Information);
