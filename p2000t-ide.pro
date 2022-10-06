@@ -10,6 +10,7 @@ CONFIG += c++11
 
 SOURCES += \
     src/assemblyhighlighter.cpp \
+    src/codeeditor.cpp \
     src/flashthread.cpp \
     src/ioworker.cpp \
     src/main.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
 
 HEADERS += \
     src/assemblyhighlighter.h \
+    src/codeeditor.h \
     src/config.h \
     src/flashthread.h \
     src/ioworker.h \

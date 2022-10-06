@@ -17,5 +17,7 @@
         <file>assets/themes/darkorange/icons/checkbox.png</file>
         <file>assets/themes/darkorange/icons/down_arrow.png</file>
         <file>assets/themes/darkorange/icons/handle.png</file>
+        <file>assets/code/helloworld.asm</file>
+        <file>assets/images/p2000t-ide.ico</file>
     </qresource>
 </RCC>

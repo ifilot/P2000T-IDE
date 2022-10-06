@@ -20,12 +20,13 @@
 #include "threadrun.h"
 #include "assemblyhighlighter.h"
 #include "serialwidget.h"
+#include "codeeditor.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private:
-    QTextEdit* text_editor;
+    CodeEditor* code_editor;
     QLabel* label_active_filename;
     QPlainTextEdit* log_viewer;
     QHexView* hex_viewer;
@@ -66,6 +67,11 @@ private slots:
      * @brief save machine code
      */
     void slot_save_machine_code();
+
+    /**
+     * @brief slot_load_example_file
+     */
+    void slot_load_example_file();
 
     /**
      * @brief compile a file

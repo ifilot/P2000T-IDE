@@ -141,20 +141,20 @@ void QHexView::paintEvent(QPaintEvent *event)
 
     painter.fillRect(event->rect(), this->palette().color(QPalette::Base));
 
-    QColor addressAreaColor = QColor(0x20, 0x20, 0x20, 0xff);
+    QColor addressAreaColor = QColor(0xe8e4cf);
     painter.fillRect(QRect(m_posAddr, event->rect().top(), m_posHex - GAP_ADR_HEX + 2 , height()), addressAreaColor);
 
     int linePos = m_posAscii - (GAP_HEX_ASCII / 2);
-    painter.setPen(Qt::gray);
+    painter.setPen(QColor(0x20201d));
 
     painter.drawLine(linePos, event->rect().top(), linePos, height());
 
-    painter.setPen(Qt::gray);
+    painter.setPen(QColor(0x20201d));
 
     int yPosStart = m_charHeight;
 
     QBrush def = painter.brush();
-    QBrush selected = QBrush(QColor(0x6d, 0x9e, 0xff, 0xff));
+    QBrush selected = QBrush(QColor(0x20201d));
     QByteArray data = m_pdata->getData(firstLineIdx * m_bytesPerLine, (lastLineIdx - firstLineIdx) * m_bytesPerLine);
 
     for (int lineIdx = firstLineIdx, yPos = yPosStart;  lineIdx < lastLineIdx; lineIdx += 1, yPos += m_charHeight)

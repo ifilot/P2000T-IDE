@@ -23,21 +23,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     layout_text_edit->addWidget(this->label_active_filename);
 
     // add text editor
-    this->text_editor = new QTextEdit();
+    this->code_editor = new CodeEditor();
     QFont font;
     font.setFamily("Courier");
     font.setStyleHint(QFont::Monospace);
     font.setFixedPitch(true);
     font.setPointSize(10);
-    text_editor->setFont(font);
-    this->highlighter = new AssemblyHighlighter(this->text_editor->document());
+    this->code_editor->setFont(font);
+    this->highlighter = new AssemblyHighlighter(this->code_editor->document());
 
     // set tab stop
     const int tabStop = 4;
     QFontMetrics metrics(font);
-    text_editor->setTabStopWidth(tabStop * metrics.width(' '));
-    layout_text_edit->addWidget(this->text_editor);
-    connect(this->text_editor, SIGNAL(textChanged()), this, SLOT(slot_editor_onchange()));
+    this->code_editor->setTabStopWidth(tabStop * metrics.width(' '));
+    layout_text_edit->addWidget(this->code_editor);
+    connect(this->code_editor, SIGNAL(textChanged()), this, SLOT(slot_editor_onchange()));
 
     // add text editor parent widget
     top_layout->addWidget(parent_widget_text_edit);
@@ -79,7 +79,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     connect(this->serial_widget, SIGNAL(signal_get_data()), this, SLOT(slot_serial_assert_data()));
 
     this->build_menu();
-    //this->load_theme();
+
+    // set Window icon and title
+    this->setWindowTitle(tr(PROGRAM_NAME) + " " + tr(PROGRAM_VERSION));
+    this->setWindowIcon(QIcon(":/assets/images/p2000t-ide.ico"));
 }
 
 void MainWindow::build_menu() {
@@ -119,6 +122,18 @@ void MainWindow::build_menu() {
     action_save_machine_code->setShortcuts(QKeySequence::SaveAs);
     menuFile->addAction(action_save_machine_code);
     connect(action_save_machine_code, &QAction::triggered, this, &MainWindow::slot_save_machine_code);
+
+    // add code examples
+    menuFile->addSeparator();
+    QStringList sample_files = {"helloworld.asm"};
+    QMenu *menu_samples = menuFile->addMenu(tr("&Examples"));
+    for(int i=0; i<sample_files.size(); i++) {
+        QAction *action_load_example = new QAction(sample_files[i]);
+        action_load_example->setText(sample_files[i]);
+        menu_samples->addAction(action_load_example);
+        action_load_example->setData(QVariant(sample_files[i]));
+        connect(action_load_example, &QAction::triggered, this, &MainWindow::slot_load_example_file);
+    }
 
     // Compile
     QAction *action_compile = new QAction(menuBuild);
@@ -170,7 +185,7 @@ void MainWindow::slot_open() {
     QFile sourcefile(filename);
     if(sourcefile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QByteArray contents = sourcefile.readAll();
-        this->text_editor->setPlainText(contents);
+        this->code_editor->setPlainText(contents);
     }
     sourcefile.close();
 
@@ -197,7 +212,7 @@ void MainWindow::slot_save() {
     QFile sourcefile(url);
     if(sourcefile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&sourcefile);
-        stream << this->text_editor->toPlainText();
+        stream << this->code_editor->toPlainText();
     }
     sourcefile.close();
     qDebug() << "Saved sourcecode to " << url;
@@ -222,7 +237,7 @@ void MainWindow::slot_save_as() {
     QFile sourcefile(filename);
     if(sourcefile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&sourcefile);
-        stream << this->text_editor->toPlainText();
+        stream << this->code_editor->toPlainText();
     }
     qDebug() << "Saved sourcecode to new file " << filename;
 
@@ -254,13 +269,34 @@ void MainWindow::slot_save_machine_code() {
 }
 
 /**
+ * @brief slot_load_example_file
+ */
+void MainWindow::slot_load_example_file() {
+    // get file
+    QAction* act = qobject_cast<QAction *>(sender());
+    if (act != 0) {
+        QVariant data = act->data();
+        QString filename = data.toString();
+        qDebug() << "Loading: " << filename;
+
+        // set source in code editor
+        QFile source_file(":/assets/code/" + filename);
+        if(source_file.exists()) {
+            if(source_file.open(QIODevice::ReadOnly)) {
+                this->code_editor->setPlainText(source_file.readAll());
+            }
+        }
+     }
+}
+
+/**
  * @brief compile file
  */
 void MainWindow::slot_compile() {
     // always save before compiling
     this->slot_save();
 
-    QString source = this->text_editor->toPlainText();
+    QString source = this->code_editor->toPlainText();
     this->compile_job = std::make_unique<ThreadCompile>();
     compile_job->set_source(source);
     connect(compile_job.get(), SIGNAL(signal_compilation_done()), this, SLOT(slot_compilation_done()));
@@ -298,7 +334,7 @@ void MainWindow::slot_about() {
                         PROGRAM_NAME " is dynamically linked to Qt, which is licensed under LGPLv3.\n");
     message_box.setIcon(QMessageBox::Information);
     message_box.setWindowTitle("About " + tr(PROGRAM_NAME));
-    message_box.setWindowIcon(QIcon(":/assets/icons/saucepan.ico"));
+    message_box.setWindowIcon(QIcon(":/assets/images/p2000t-ide.ico"));
     message_box.exec();
 }
 

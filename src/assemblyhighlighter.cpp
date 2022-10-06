@@ -4,41 +4,28 @@ AssemblyHighlighter::AssemblyHighlighter(QTextDocument *parent) : QSyntaxHighlig
 {
     HighlightingRule rule;
 
-    this->keyword_format.setForeground(Qt::cyan);
-    const QString keyword_patterns[] = {
-        QStringLiteral("\\borg\\b"),
-        QStringLiteral("\\badd\\b"),
-        QStringLiteral("\\band\\b"),
-        QStringLiteral("\\bor\\b"),
-        QStringLiteral("\\bld\\b"),
-        QStringLiteral("\\bDB\\b"),
-        QStringLiteral("\\bjp\\b"),
-        QStringLiteral("\\bjr\\b"),
-        QStringLiteral("\\binc\\b"),
-        QStringLiteral("\\bcp\\b"),
-        QStringLiteral("\\bret\\b"),
-        QStringLiteral("\\bpush\\b"),
-        QStringLiteral("\\bpop\\b"),
-        QStringLiteral("\\bldir\\b"),
-        QStringLiteral("\\bdec\\b"),
-        QStringLiteral("\\bcall\\b"),
-        QStringLiteral("\\brra\\b"),
+    this->keyword_format.setForeground(QColor(BASE08));
+    const QStringList opcodes = {
+        "NOP", "LD", "INC", "DEC", "RLCA", "EX", "ADD", "RRCA", "DJNZ", "RLA", "JR",
+        "RRA", "DAA", "CPL", "SCF", "CCF", "HALT", "ADC", "SUB", "SBC", "AND", "XOR",
+        "OR", "CP", "RET", "POP", "JP", "CALL", "PUSH", "RST", "OUT", "EXX", "IN",
+        "DI", "EI"
     };
-    for (const QString &pattern : keyword_patterns) {
-        rule.pattern = QRegularExpression(pattern);
+    for(int i=0; i<opcodes.size(); i++) {
+        rule.pattern = QRegularExpression(tr("\\b") + opcodes[i].toLower() + "\\b");
         rule.format = this->keyword_format;
         this->highlighting_rules.append(rule);
     }
 
     // comments
-    this->single_line_comment_format.setForeground(Qt::gray);
+    this->single_line_comment_format.setForeground(QColor(BASE03));
     this->single_line_comment_format.setFontItalic(true);
     rule.pattern = QRegularExpression(QStringLiteral("^\\s*;.*$"));
     rule.format = single_line_comment_format;
     this->highlighting_rules.append(rule);
 
     // labels
-    this->keyword_format.setForeground(Qt::white);
+    this->keyword_format.setForeground(QColor(BASE0C));
     rule.pattern = QRegularExpression(QStringLiteral("^[A-Za-z0-9]+:\\s*$"));
     rule.format = this->keyword_format;
     this->highlighting_rules.append(rule);
