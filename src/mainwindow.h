@@ -66,6 +66,11 @@ private slots:
     /**
      * @brief save machine code
      */
+    void slot_load_machine_code();
+
+    /**
+     * @brief save machine code
+     */
     void slot_save_machine_code();
 
     /**

@@ -93,7 +93,7 @@ std::string SerialInterface::get_board_info() {
  */
 QByteArray SerialInterface::read_block(unsigned int sector_addr) {
     try {
-        std::string command = (boost::format("RDBK%04X") % (sector_addr * 0x100)).str();
+        std::string command = (boost::format("RDBK%04X") % sector_addr).str();
         QByteArray response_data = this->send_command_capture_response(command, 0x100);
 
         return response_data;
@@ -107,13 +107,13 @@ QByteArray SerialInterface::read_block(unsigned int sector_addr) {
  * @brief Erase sector (4096 bytes) on SST39SF0x0 chip
  * @param start address
  */
-void SerialInterface::erase_sector(unsigned int addr) {
+void SerialInterface::erase_sector(unsigned int sector_id) {
     try {
-        std::string command = (boost::format("ESST%04X") % (unsigned int)addr).str();
+        std::string command = (boost::format("ESST%04X") % (unsigned int)sector_id).str();
         auto response = this->send_command_capture_response(command, 2);
         uint16_t nrcycles = 0;
         memcpy((void*)&nrcycles, (void*)&response.data()[0], 2);
-        qDebug() << "Succesfully erased sector " << addr << " in " << nrcycles << " cyles.";
+        qDebug() << "Succesfully erased sector " << sector_id << " in " << nrcycles << " cyles.";
     }  catch (std::exception& e) {
         std::cerr << "Caught error: " << e.what() << std::endl;
         throw e;
@@ -125,10 +125,10 @@ void SerialInterface::erase_sector(unsigned int addr) {
  * @param start address
  * @param data (256 bytes)
  */
-void SerialInterface::burn_block(unsigned int addr, const QByteArray& data) {
+void SerialInterface::burn_block(unsigned int sector_addr, const QByteArray& data) {
     try {
         qDebug() << "Burning block.";
-        std::string command = (boost::format("WRBK%04X") % (unsigned int)addr).str();
+        std::string command = (boost::format("WRBK%04X") % sector_addr).str();
         this->send_command(command);
         this->port->write(data, 256);
         while(this->port->waitForBytesWritten(SERIAL_TIMEOUT_BLOCK)){}

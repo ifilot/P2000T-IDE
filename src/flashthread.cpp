@@ -42,13 +42,13 @@ void FlashThread::flash_sst39sf0x0() {
         return;
     }
 
-    for(unsigned int i=0; i<64; i++) {
+    for(unsigned int i=0; i<this->num_pages; i++) {
         emit(flash_block_start(i));
 
         if(i % (0x1000 / 256) == 0) {
-            this->serial_interface->erase_sector(i * 256);
+            this->serial_interface->erase_sector(i);
         }
-        this->serial_interface->burn_block(i*256, this->data.mid(i * 256, 256));
+        this->serial_interface->burn_block(i, this->data.mid(i * 256, 256));
 
         emit(flash_block_done(i));
     }

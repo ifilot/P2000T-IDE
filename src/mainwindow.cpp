@@ -115,11 +115,16 @@ void MainWindow::build_menu() {
     menuFile->addAction(action_save_as);
     connect(action_save_as, &QAction::triggered, this, &MainWindow::slot_save_as);
 
-    // save machine code
+    // load machine code
     menuFile->addSeparator();
+    QAction *action_load_machine_code = new QAction(menuFile);
+    action_load_machine_code->setText(tr("Load binary"));
+    menuFile->addAction(action_load_machine_code);
+    connect(action_load_machine_code, &QAction::triggered, this, &MainWindow::slot_load_machine_code);
+
+    // save machine code
     QAction *action_save_machine_code = new QAction(menuFile);
-    action_save_machine_code->setText(tr("Save machine code"));
-    action_save_machine_code->setShortcuts(QKeySequence::SaveAs);
+    action_save_machine_code->setText(tr("Save binary"));
     menuFile->addAction(action_save_machine_code);
     connect(action_save_machine_code, &QAction::triggered, this, &MainWindow::slot_save_machine_code);
 
@@ -248,8 +253,32 @@ void MainWindow::slot_save_as() {
 /**
  * @brief save machine code
  */
+void MainWindow::slot_load_machine_code() {
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    "",
+                                                    tr("Assembly source files (*.bin)"));
+
+    // do nothing if user has cancelled
+    if(filename.isEmpty()) {
+        return;
+    }
+
+    QFile sourcefile(filename);
+    if(sourcefile.open(QIODevice::ReadOnly)) {
+        this->hex_viewer->setData(new QHexView::DataStorageArray(sourcefile.readAll()));
+        this->hex_viewer->viewport()->update();
+    }
+    qDebug() << "Load sourcecode from file: " << filename;
+
+    // rewrite label
+    this->label_active_filename->setText(filename);
+}
+
+/**
+ * @brief save machine code
+ */
 void MainWindow::slot_save_machine_code() {
-    QString filename = QFileDialog::getSaveFileName(this, tr("Open File"),
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save File"),
                                                     "",
                                                     tr("Assembly source files (*.bin)"));
 
