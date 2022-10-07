@@ -36,19 +36,6 @@ class FlashThread : public IOWorker {
     Q_OBJECT
 
 private:
-    /**
-     * @brief flash card id
-     *
-     * 0: unknown
-     * 1: AT28C256
-     * 2: SST39SF0x0
-     */
-    uint8_t flash_card_id = 0;
-
-    /**
-     * @brief number of pages / blocks to flash
-     */
-    uint16_t num_pages = 0;
 
 public:
     /**
@@ -67,30 +54,6 @@ public:
      * @brief run cart flash routine
      */
     void run() override;
-
-    /**
-     * @brief set_flash_card_id
-     * @param _flash_card_id
-     */
-    inline void set_flash_card_id(uint8_t _flash_card_id) {
-        this->flash_card_id = _flash_card_id;
-    }
-
-    /**
-     * @brief get_flash_id
-     * @return
-     */
-    inline unsigned int get_flash_id() const {
-        return this->flash_card_id;
-    }
-
-    /**
-     * @brief get_num_pages
-     * @return number of pages / blocks
-     */
-    inline uint16_t get_num_pages() const {
-        return this->num_pages;
-    }
 
 private:
     /**

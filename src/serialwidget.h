@@ -17,6 +17,7 @@
 #include "serial_interface.h"
 #include "readthread.h"
 #include "flashthread.h"
+#include "dialogslotselection.h"
 
 class SerialWidget : public QWidget
 {

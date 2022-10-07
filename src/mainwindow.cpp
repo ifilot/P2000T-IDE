@@ -378,7 +378,6 @@ void MainWindow::slot_compilation_done() {
     // show hexcode
     QHexView::DataStorageArray* mcode = new QHexView::DataStorageArray(this->compile_job->get_mcode());
     this->hex_viewer->setData(mcode);
-    this->hex_viewer->viewport()->update();
 }
 
 /**
@@ -434,7 +433,6 @@ void MainWindow::slot_serial_parse_data() {
     auto data = this->serial_widget->get_data();
     QHexView::DataStorageArray* mcode = new QHexView::DataStorageArray(data);
     this->hex_viewer->setData(mcode);
-    this->hex_viewer->viewport()->update();
 }
 
 /**

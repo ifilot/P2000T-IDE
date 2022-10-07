@@ -33,7 +33,6 @@ class ReadThread : public IOWorker {
     Q_OBJECT
 
 private:
-    unsigned int nr_rom_banks = 0;      // number of banks to read
 
 public:
     ReadThread() {}

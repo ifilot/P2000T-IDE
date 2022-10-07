@@ -31,8 +31,6 @@ void FlashThread::run() {
  * @brief run flash cart routine for a sst39sf0x0 chip
  */
 void FlashThread::flash_sst39sf0x0() {
-    this->num_pages = (16 * 1024 / 256);
-
     this->serial_interface->open_port();
 
     // check that the chip id is correct
@@ -42,13 +40,13 @@ void FlashThread::flash_sst39sf0x0() {
         return;
     }
 
-    for(unsigned int i=0; i<this->num_pages; i++) {
+    for(unsigned int i=0; i<64; i++) {
         emit(flash_block_start(i));
 
         if(i % (0x1000 / 256) == 0) {
-            this->serial_interface->erase_sector(i);
+            this->serial_interface->erase_sector(this->slot_id * 64 + i);
         }
-        this->serial_interface->burn_block(i, this->data.mid(i * 256, 256));
+        this->serial_interface->burn_block(this->slot_id * 64 + i, this->data.mid(i * 256, 256));
 
         emit(flash_block_done(i));
     }

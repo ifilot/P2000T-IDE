@@ -3,7 +3,7 @@
 const int MIN_HEXCHARS_IN_LINE = 47;
 const int GAP_ADR_HEX = 10;
 const int GAP_HEX_ASCII = 16;
-const int MIN_BYTES_PER_LINE = 16;
+const int MIN_BYTES_PER_LINE = 22; // no clue why this is needed, but this ensures there are 16 hex codes per line
 const int ADR_LENGTH = 10;
 
 
@@ -47,6 +47,8 @@ void QHexView::setData(QHexView::DataStorage *pData)
     m_pdata = pData;
     m_cursorPos = 0;
     resetSelection(0);
+
+    this->viewport()->update();
 }
 
 

@@ -121,6 +121,16 @@ void SerialWidget::select_com_port() {
  * @brief Read data from chip
  */
 void SerialWidget::read_cartridge() {
+    DialogSlotSelection dialog;
+    int res = dialog.exec();
+    if(res != QDialog::Accepted) {
+        qDebug() << "Cancelled operation.";
+        return;
+    }
+
+    int slot_id = dialog.get_slot_id();
+    qDebug() << "Selecting slot " << slot_id;
+
     this->timer1.start();
     this->num_blocks = 64;
 
@@ -129,6 +139,7 @@ void SerialWidget::read_cartridge() {
 
     // dispatch thread
     this->readerthread = std::make_unique<ReadThread>(this->serial_interface);
+    this->readerthread->set_rom_slot(slot_id);
     this->readerthread->set_serial_port(this->combobox_serial_ports->currentText().toStdString());
     connect(this->readerthread.get(), SIGNAL(read_result_ready()), this, SLOT(read_result_ready()));
     connect(this->readerthread.get(), SIGNAL(read_block_start(uint)), this, SLOT(read_block_start(uint)));
@@ -178,6 +189,14 @@ void SerialWidget::read_result_ready() {
  * @brief Put rom on flash cartridge
  */
 void SerialWidget::flash_rom() {
+    DialogSlotSelection dialog;
+    int res = dialog.exec();
+    if(res != QDialog::Accepted) {
+        qDebug() << "Cancelled operation.";
+        return;
+    }
+    int slot_id = dialog.get_slot_id();
+
     // dispatch thread
     this->timer1.start();
 
@@ -191,6 +210,7 @@ void SerialWidget::flash_rom() {
 
     this->progress_bar_load->setMaximum(64);
     this->flashthread = std::make_unique<FlashThread>(this->serial_interface);
+    this->flashthread->set_rom_slot(slot_id);
     this->flashthread->set_serial_port(this->combobox_serial_ports->currentText().toStdString());
     this->flashthread->set_data(this->flash_data);
 
@@ -215,7 +235,7 @@ void SerialWidget::flash_block_start(unsigned int page_id) {
  * @brief Slot to accept that a page is written
  */
 void SerialWidget::flash_block_done(unsigned int page_id) {
-    unsigned int num_pages = this->flashthread->get_num_pages();
+    unsigned int num_pages = 64;
     double seconds_passed = (double)this->timer1.elapsed() / 1000.0;
     double seconds_per_page = seconds_passed / (double)(page_id+1);
     double seconds_remaining = seconds_per_page * (num_pages - page_id - 1);
@@ -235,6 +255,7 @@ void SerialWidget::flash_result_ready() {
     // dispatch thread
     this->timer1.restart();
     this->readerthread = std::make_unique<ReadThread>(this->serial_interface);
+    this->readerthread->set_rom_slot(this->flashthread->get_rom_slot());
     this->readerthread->set_serial_port(this->combobox_serial_ports->currentText().toStdString());
 
     // set progress bar

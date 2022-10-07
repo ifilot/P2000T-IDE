@@ -34,7 +34,7 @@ void ReadThread::run() {
     // read the first 16 kb
     for(unsigned int i=0; i<64; i++) {  // 64 blocks of 256 bytes each
         emit(read_block_start(sector_counter));
-        auto sectordata = this->serial_interface->read_block(i);
+        auto sectordata = this->serial_interface->read_block(this->slot_id * 64 + i);
         this->data.append(sectordata);
         emit(read_block_done(sector_counter));
         sector_counter++;

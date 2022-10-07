@@ -43,8 +43,7 @@ class IOWorker : public QThread {
 protected:
     std::string portname;           // port address
     QByteArray data;                // data package
-    unsigned int nr_sectors;        // number of sectors to read
-    uint8_t mapper_type;            // bank switching mapper id
+    int slot_id;                    // ROM slot id
 
     // use shared pointer to SerialInterface, this serial
     // interface should be created in the MainWindow class
@@ -56,6 +55,22 @@ public:
     IOWorker(const std::shared_ptr<SerialInterface>& _serial_interface) :
         serial_interface(_serial_interface)
     {}
+
+    /**
+     * @brief set_rom_slot
+     * @param _slot_id
+     */
+    inline void set_rom_slot(int _slot_id) {
+        this->slot_id = _slot_id;
+    }
+
+    /**
+     * @brief get_rom_slot
+     * @return
+     */
+    inline int get_rom_slot() const {
+        return this->slot_id;
+    }
 
     /**
      * @brief set the address of the serial
@@ -73,17 +88,6 @@ public:
      */
     inline void set_data(const QByteArray& _data) {
         this->data = _data;
-    }
-
-    /**
-     * @brief set_data_package
-     * @param _nr_sectors
-     * @param _mapper_type
-     */
-    inline void set_data_package(unsigned int _nr_sectors, uint8_t _mapper_type) {
-        this->mapper_type = _mapper_type;
-        this->nr_sectors = _nr_sectors;
-        this->data.clear();
     }
 
     /**
