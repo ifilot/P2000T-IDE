@@ -136,8 +136,21 @@ void MainWindow::build_menu() {
         QAction *action_load_example = new QAction(sample_files[i]);
         action_load_example->setText(sample_files[i]);
         menu_samples->addAction(action_load_example);
-        action_load_example->setData(QVariant(sample_files[i]));
-        connect(action_load_example, &QAction::triggered, this, &MainWindow::slot_load_example_file);
+        action_load_example->setData(QVariant(":/assets/code/" + sample_files[i]));
+        connect(action_load_example, &QAction::triggered, this, &MainWindow::slot_load_file);
+    }
+
+    // add code recent files
+    menuFile->addSeparator();
+    QSettings settings;
+    QStringList recent_files = settings.value(this->RECENT_FILES_KEYWORD).toStringList();
+    QMenu *menu_recent_files = menuFile->addMenu(tr("&Recent Files"));
+    for(int i=0; i<this->MAX_RECENT_FILES; i++) {
+        QAction* action = new QAction("File");
+        this->recent_file_action_list.append(action);
+        action->setVisible(false);
+        menu_recent_files->addAction(action);
+        connect(action, &QAction::triggered, this, &MainWindow::slot_load_file);
     }
 
     // Compile
@@ -171,6 +184,9 @@ void MainWindow::build_menu() {
 
     // build menu
     setMenuBar(menuBar);
+
+    // update actionlist for files
+    this->update_recent_action_filelist();
 }
 
 /**
@@ -191,8 +207,9 @@ void MainWindow::slot_open() {
     if(sourcefile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QByteArray contents = sourcefile.readAll();
         this->code_editor->setPlainText(contents);
+        sourcefile.close();
+        this->update_recent_files_list(filename);
     }
-    sourcefile.close();
 
     this->label_active_filename->setText(filename);
 }
@@ -218,8 +235,10 @@ void MainWindow::slot_save() {
     if(sourcefile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&sourcefile);
         stream << this->code_editor->toPlainText();
+        sourcefile.close();
+        update_recent_files_list(url);
     }
-    sourcefile.close();
+
     qDebug() << "Saved sourcecode to " << url;
 
     // rewrite label
@@ -243,6 +262,9 @@ void MainWindow::slot_save_as() {
     if(sourcefile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&sourcefile);
         stream << this->code_editor->toPlainText();
+        sourcefile.close();
+
+        update_recent_files_list(filename);
     }
     qDebug() << "Saved sourcecode to new file " << filename;
 
@@ -298,9 +320,9 @@ void MainWindow::slot_save_machine_code() {
 }
 
 /**
- * @brief slot_load_example_file
+ * @brief slot_load_file
  */
-void MainWindow::slot_load_example_file() {
+void MainWindow::slot_load_file() {
     // get file
     QAction* act = qobject_cast<QAction *>(sender());
     if (act != 0) {
@@ -309,11 +331,18 @@ void MainWindow::slot_load_example_file() {
         qDebug() << "Loading: " << filename;
 
         // set source in code editor
-        QFile source_file(":/assets/code/" + filename);
+        QFile source_file(filename);
         if(source_file.exists()) {
             if(source_file.open(QIODevice::ReadOnly)) {
                 this->code_editor->setPlainText(source_file.readAll());
             }
+            source_file.close();
+
+            if(!filename.startsWith(":/assets")) {
+                this->update_recent_files_list(filename);
+                this->label_active_filename->setText(filename);
+            }
+
         }
      }
 }
@@ -436,6 +465,95 @@ void MainWindow::add_groupbox_and_widget(const QString& name, QLayout* layout, Q
 }
 
 /**
+ * @brief update_recent_files_list
+ * @param filename
+ */
+void MainWindow::update_recent_files_list(const QString& filename) {
+    QSettings settings;
+
+    // verify if settings object contains a recent_files variable
+    if(!settings.contains(this->RECENT_FILES_KEYWORD)) {
+        settings.setValue(this->RECENT_FILES_KEYWORD, QVariant(QStringList()));
+    }
+
+    // load recent files paths
+    QStringList recent_files_paths = settings.value(this->RECENT_FILES_KEYWORD).toStringList();
+
+    // check whether the item already exists, if so, ensure that the
+    // recent file is placed at the top
+    if(recent_files_paths.contains(filename)) {
+        QStringList new_recent_file_list;
+        new_recent_file_list.append(filename);
+        for(int i=0; i<recent_files_paths.size(); i++) {
+            if(recent_files_paths[i] != filename) {
+                new_recent_file_list.append(recent_files_paths[i]);
+            }
+        }
+        settings.setValue(this->RECENT_FILES_KEYWORD, QVariant(recent_files_paths));
+        this->update_recent_action_filelist();
+        return;
+    }
+
+    // if the file is not yet in the list, add if to the list and
+    // remove any old items if the list is already at its max capacity
+    if(recent_files_paths.size() >= this->MAX_RECENT_FILES) {
+        for(int i=0; i<7; i++) {
+            recent_files_paths[i] = recent_files_paths[i+1];
+        }
+        recent_files_paths[7] = filename;
+    } else {
+        recent_files_paths.append(filename);
+    }
+
+    qDebug() << "Updating recent files";
+    for(int i=0; i<recent_files_paths.size(); i++) {
+        qDebug() << i << " " << recent_files_paths[i];
+    }
+
+    settings.setValue(this->RECENT_FILES_KEYWORD, QVariant(recent_files_paths));
+    this->update_recent_action_filelist();
+}
+
+/**
+ * @brief Update the recent files menu
+ */
+void MainWindow::update_recent_action_filelist() {
+    QSettings settings;
+
+    // verify if settings object contains a recent_files variable
+    if(!settings.contains(this->RECENT_FILES_KEYWORD)) {
+        settings.setValue(this->RECENT_FILES_KEYWORD, QVariant(QStringList()));
+    }
+
+    QStringList recent_files_paths = settings.value(this->RECENT_FILES_KEYWORD).toStringList();
+    for(int i=0; i<this->MAX_RECENT_FILES; i++) {
+        qDebug() << "Checking file: " << i;
+        if(i < recent_files_paths.size()) {
+            QFileInfo file_info(recent_files_paths[i]);
+            if(file_info.exists()) {
+                qDebug() << "Enabling menu item";
+                this->recent_file_action_list[i]->setVisible(true);
+                this->recent_file_action_list[i]->setData(recent_files_paths[i]);
+                this->recent_file_action_list[i]->setText(file_info.fileName());
+            } else {
+                qDebug() << "Ignoring menu item";
+                this->recent_file_action_list[i]->setVisible(false);
+            }
+        } else {
+            qDebug() << "Skipping menu item";
+            this->recent_file_action_list[i]->setVisible(false);
+        }
+    }
+}
+
+/**
+ * @brief write_settings
+ */
+void MainWindow::write_settings() {
+    // do something to settings
+}
+
+/**
  * @brief slot when text editor has changed
  */
 void MainWindow::slot_editor_onchange() {
@@ -459,4 +577,12 @@ void MainWindow::slot_serial_parse_data() {
 void MainWindow::slot_serial_assert_data() {
     auto data = this->hex_viewer->get_data();
     this->serial_widget->set_flash_data(data);
+}
+
+/**
+ * @brief Close event
+ */
+void MainWindow::closeEvent(QCloseEvent *event){
+    this->write_settings();
+    QMainWindow::closeEvent(event);
 }

@@ -13,6 +13,9 @@
 #include <QLabel>
 #include <QStatusBar>
 #include <QGroupBox>
+#include <QSettings>
+#include <QStringList>
+#include <QList>
 
 #include "qhexview.h"
 #include "config.h"
@@ -34,6 +37,10 @@ private:
     std::unique_ptr<ThreadCompile> compile_job;
     std::mutex compile_mutex;
     AssemblyHighlighter* highlighter;
+    QList<QAction*> recent_file_action_list;
+
+    const unsigned int MAX_RECENT_FILES = 8;
+    const QString RECENT_FILES_KEYWORD = "recent_files";
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -47,6 +54,22 @@ private:
     void add_groupbox_and_widget(const QString& name,
                                  QLayout* layout,
                                  QWidget* widget);
+
+    /**
+     * @brief update_recent_files_list
+     * @param filename
+     */
+    void update_recent_files_list(const QString& filename);
+
+    /**
+     * @brief Update the recent files menu
+     */
+    void update_recent_action_filelist();
+
+    /**
+     * @brief write_settings
+     */
+    void write_settings();
 
 private slots:
     /**
@@ -77,7 +100,7 @@ private slots:
     /**
      * @brief slot_load_example_file
      */
-    void slot_load_example_file();
+    void slot_load_file();
 
     /**
      * @brief compile a file
@@ -123,5 +146,11 @@ private slots:
      * @brief Parse data from Hex Editor to SerialWidget class
      */
     void slot_serial_assert_data();
+
+    /**
+     * @brief closeEvent
+     * @param event
+     */
+    void closeEvent(QCloseEvent *event) override;
 };
 #endif // MAINWINDOW_H
