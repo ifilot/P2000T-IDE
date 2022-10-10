@@ -351,7 +351,7 @@ void MainWindow::slot_compile() {
  */
 void MainWindow::slot_run() {
     ThreadRun* runthread = new ThreadRun();
-    runthread->set_mcode(this->compile_job->get_mcode());
+    runthread->set_mcode(this->hex_viewer->get_data());
     connect(runthread, SIGNAL(signal_run_complete(void*)), this, SLOT(slot_run_complete(void*)));
     runthread->start();
 }

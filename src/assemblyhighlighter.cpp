@@ -4,6 +4,13 @@ AssemblyHighlighter::AssemblyHighlighter(QTextDocument *parent) : QSyntaxHighlig
 {
     HighlightingRule rule;
 
+    // comments
+    this->single_line_comment_format.setForeground(QColor(BASE03));
+    this->single_line_comment_format.setFontItalic(true);
+    rule.pattern = QRegularExpression(QStringLiteral(";.*$"));
+    rule.format = single_line_comment_format;
+    this->highlighting_rules.append(rule);
+
     this->keyword_format.setForeground(QColor(BASE08));
     const QStringList opcodes = {
         "NOP", "LD", "INC", "DEC", "RLCA", "EX", "ADD", "RRCA", "DJNZ", "RLA", "JR",
@@ -16,13 +23,6 @@ AssemblyHighlighter::AssemblyHighlighter(QTextDocument *parent) : QSyntaxHighlig
         rule.format = this->keyword_format;
         this->highlighting_rules.append(rule);
     }
-
-    // comments
-    this->single_line_comment_format.setForeground(QColor(BASE03));
-    this->single_line_comment_format.setFontItalic(true);
-    rule.pattern = QRegularExpression(QStringLiteral("^\\s*;.*$"));
-    rule.format = single_line_comment_format;
-    this->highlighting_rules.append(rule);
 
     // labels
     this->keyword_format.setForeground(QColor(BASE0C));
