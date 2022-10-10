@@ -51,6 +51,10 @@ void ThreadCompile::run() {
     dir.removeRecursively();
 
     // emit compilation done
+    process->waitForFinished();
+
+    qDebug() << "Emit compilation done";
+    process->close();
     emit(signal_compilation_done());
 }
 

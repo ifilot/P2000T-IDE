@@ -22,7 +22,7 @@
 #define CONFIG_H
 
 #define PROGRAM_NAME "P2000T-ide"
-#define PROGRAM_VERSION "0.3.0"
+#define PROGRAM_VERSION "0.3.1"
 
 #define UNUSED(x) (void)(x)
 

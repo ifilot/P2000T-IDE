@@ -32,6 +32,7 @@ private:
     QHexView* hex_viewer;
     SerialWidget* serial_widget;
     std::unique_ptr<ThreadCompile> compile_job;
+    std::mutex compile_mutex;
     AssemblyHighlighter* highlighter;
 
 public:

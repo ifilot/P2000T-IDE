@@ -322,10 +322,24 @@ void MainWindow::slot_load_example_file() {
  * @brief compile file
  */
 void MainWindow::slot_compile() {
+    // try to lock, else wait
+    unsigned int ctr=0;
+    qDebug() << "Try to lock mutex";
+    while(!this->compile_mutex.try_lock()){
+        qDebug() << "Waiting for lock: " << ctr;
+
+        if(ctr > 10) { // exit as some point
+            return;
+        }
+
+        ctr++;
+    }
+
     // always save before compiling
     this->slot_save();
 
     QString source = this->code_editor->toPlainText();
+
     this->compile_job = std::make_unique<ThreadCompile>();
     compile_job->set_source(source);
     connect(compile_job.get(), SIGNAL(signal_compilation_done()), this, SLOT(slot_compilation_done()));
@@ -378,6 +392,10 @@ void MainWindow::slot_compilation_done() {
     // show hexcode
     QHexView::DataStorageArray* mcode = new QHexView::DataStorageArray(this->compile_job->get_mcode());
     this->hex_viewer->setData(mcode);
+
+    // delete compilation object and unlock mutex
+    this->compile_mutex.unlock();
+    this->compile_job.reset();
 }
 
 /**
