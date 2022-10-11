@@ -50,6 +50,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QVBoxLayout* layout_hexviewer = new QVBoxLayout();
     hex_viewer_container->setLayout(layout_hexviewer);
     this->hex_viewer = new QHexView();
+
+    // hex info
+    QWidget* widget_hexinfo = new QWidget();
+    QHBoxLayout* layout_hexinfo = new QHBoxLayout();
+    widget_hexinfo->setLayout(layout_hexinfo);
+    this->label_machine_code_data = new QLabel("");
+    this->progressbar_storage = new QProgressBar();
+    this->progressbar_storage->setMinimum(0);
+    this->progressbar_storage->setMaximum(16*1024);
+    this->progressbar_storage->setVisible(false);
+    this->progressbar_storage->setStyleSheet(" QProgressBar { border: 1px solid #292824; border-radius: 3px; text-align: center; height: 5px;} QProgressBar::chunk {background-color: #1fad83; width: 1px;}");
+    layout_hexinfo->addWidget(this->label_machine_code_data);
+    layout_hexinfo->addWidget(this->progressbar_storage);
+
+    // add widgets to middle level container
+    layout_hexviewer->addWidget(widget_hexinfo);
     layout_hexviewer->addWidget(this->hex_viewer);
     top_layout->addWidget(hex_viewer_container);
 
@@ -421,6 +437,11 @@ void MainWindow::slot_compilation_done() {
     // show hexcode
     QHexView::DataStorageArray* mcode = new QHexView::DataStorageArray(this->compile_job->get_mcode());
     this->hex_viewer->setData(mcode);
+
+    // update machine code label
+    this->label_machine_code_data->setText(tr("%1 bytes / 16384 bytes").arg(mcode->size()));
+    this->progressbar_storage->setVisible(true);
+    this->progressbar_storage->setValue(mcode->size());
 
     // delete compilation object and unlock mutex
     this->compile_mutex.unlock();

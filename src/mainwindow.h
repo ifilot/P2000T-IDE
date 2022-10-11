@@ -29,14 +29,25 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private:
-    CodeEditor* code_editor;
+    // code editor
     QLabel* label_active_filename;
-    QPlainTextEdit* log_viewer;
-    QHexView* hex_viewer;
-    SerialWidget* serial_widget;
-    std::unique_ptr<ThreadCompile> compile_job;
-    std::mutex compile_mutex;
+    CodeEditor* code_editor;
     AssemblyHighlighter* highlighter;
+
+    // hex widget / info
+    QHexView* hex_viewer;
+    QLabel* label_machine_code_data;
+    QProgressBar* progressbar_storage;
+
+    // log
+    QPlainTextEdit* log_viewer;
+
+    // serial interface
+    SerialWidget* serial_widget;
+
+    // other
+    std::mutex compile_mutex;
+    std::unique_ptr<ThreadCompile> compile_job;
     QList<QAction*> recent_file_action_list;
 
     const unsigned int MAX_RECENT_FILES = 8;
