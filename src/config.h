@@ -22,7 +22,7 @@
 #define CONFIG_H
 
 #define PROGRAM_NAME "P2000T-ide"
-#define PROGRAM_VERSION "0.5.0"
+#define PROGRAM_VERSION "0.5.1"
 #define PROGRAM_ORGANIZATION "RETRO6502"
 #define PROGRAM_DOMAIN "retro6502.nl"
 

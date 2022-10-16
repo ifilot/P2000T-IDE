@@ -23,7 +23,13 @@ private:
     const unsigned int BASE07 = 0xfefbec;
     const unsigned int BASE08 = 0xd73737;
 
+    const unsigned int BASE0B = 0x60ac39;
     const unsigned int BASE0C = 0x1fad83;
+    const unsigned int BASE0D = 0x6684e1;
+    const unsigned int BASE0F = 0xd43552;
+
+    const unsigned int COL_COMMENTS = BASE03;
+    const unsigned int COL_NUMBERS = BASE0D;
 
 public:
     AssemblyHighlighter(QTextDocument *parent = 0);

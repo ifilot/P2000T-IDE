@@ -307,9 +307,6 @@ void MainWindow::slot_load_machine_code() {
         this->hex_viewer->viewport()->update();
     }
     qDebug() << "Load sourcecode from file: " << filename;
-
-    // rewrite label
-    this->label_active_filename->setText(filename);
 }
 
 /**
@@ -330,9 +327,6 @@ void MainWindow::slot_save_machine_code() {
         sourcefile.write(this->hex_viewer->get_data());
     }
     qDebug() << "Saved sourcecode to new file " << filename;
-
-    // rewrite label
-    this->label_active_filename->setText(filename);
 }
 
 /**
@@ -548,20 +542,16 @@ void MainWindow::update_recent_action_filelist() {
 
     QStringList recent_files_paths = settings.value(this->RECENT_FILES_KEYWORD).toStringList();
     for(int i=0; i<this->MAX_RECENT_FILES; i++) {
-        qDebug() << "Checking file: " << i;
         if(i < recent_files_paths.size()) {
             QFileInfo file_info(recent_files_paths[i]);
-            if(file_info.exists()) {
-                qDebug() << "Enabling menu item";
+            if(file_info.exists() && file_info.completeSuffix() != "bin") { // ignore binary files
                 this->recent_file_action_list[i]->setVisible(true);
                 this->recent_file_action_list[i]->setData(recent_files_paths[i]);
                 this->recent_file_action_list[i]->setText(file_info.fileName());
             } else {
-                qDebug() << "Ignoring menu item";
                 this->recent_file_action_list[i]->setVisible(false);
             }
         } else {
-            qDebug() << "Skipping menu item";
             this->recent_file_action_list[i]->setVisible(false);
         }
     }

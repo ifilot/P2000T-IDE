@@ -4,13 +4,7 @@ AssemblyHighlighter::AssemblyHighlighter(QTextDocument *parent) : QSyntaxHighlig
 {
     HighlightingRule rule;
 
-    // comments
-    this->single_line_comment_format.setForeground(QColor(BASE03));
-    this->single_line_comment_format.setFontItalic(true);
-    rule.pattern = QRegularExpression(QStringLiteral(";.*$"));
-    rule.format = single_line_comment_format;
-    this->highlighting_rules.append(rule);
-
+    // opcodes
     this->keyword_format.setForeground(QColor(BASE08));
     const QStringList opcodes = {
         "NOP", "LD", "INC", "DEC", "RLCA", "EX", "ADD", "RRCA", "DJNZ", "RLA", "JR",
@@ -19,7 +13,19 @@ AssemblyHighlighter::AssemblyHighlighter(QTextDocument *parent) : QSyntaxHighlig
         "DI", "EI"
     };
     for(int i=0; i<opcodes.size(); i++) {
-        rule.pattern = QRegularExpression(tr("\\b") + opcodes[i].toLower() + "\\b");
+        rule.pattern = QRegularExpression(tr("\\b") + opcodes[i].toLower() + "\\b", QRegularExpression::CaseInsensitiveOption);
+        rule.format = this->keyword_format;
+        this->highlighting_rules.append(rule);
+    }
+
+    // special keywords
+    this->keyword_format.setForeground(QColor(BASE0F));
+    const QStringList keywords = {
+        "DB", "DW", "EQU", "ORG", "FNAME", "FORG", "INCLUDE", "INCBIN",
+        "PHASE", "DEPHASE", "RB", "RW"
+    };
+    for(int i=0; i<keywords.size(); i++) {
+        rule.pattern = QRegularExpression(tr("\\b") + keywords[i].toLower() + "\\b", QRegularExpression::CaseInsensitiveOption);
         rule.format = this->keyword_format;
         this->highlighting_rules.append(rule);
     }
@@ -28,6 +34,28 @@ AssemblyHighlighter::AssemblyHighlighter(QTextDocument *parent) : QSyntaxHighlig
     this->keyword_format.setForeground(QColor(BASE0C));
     rule.pattern = QRegularExpression(QStringLiteral("^[A-Za-z0-9]+:\\s*$"));
     rule.format = this->keyword_format;
+    this->highlighting_rules.append(rule);
+
+    // numbers - regular
+    this->keyword_format.setForeground(QColor(COL_NUMBERS));
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[0-9]+\\b"));
+    rule.format = this->keyword_format;
+    this->highlighting_rules.append(rule);
+
+    // numbers - hexadecimal (prepended by dollar and appended by h)
+    this->keyword_format.setForeground(QColor(COL_NUMBERS));
+    rule.pattern = QRegularExpression(QStringLiteral("\\$[0-9A-F]+\\b"), QRegularExpression::CaseInsensitiveOption);
+    rule.format = this->keyword_format;
+    this->highlighting_rules.append(rule);
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[0-9A-F]+h\\b"), QRegularExpression::CaseInsensitiveOption);
+    rule.format = this->keyword_format;
+    this->highlighting_rules.append(rule);
+
+    // comments --> needs to be the last rule as it needs to overrule other rules
+    this->single_line_comment_format.setForeground(QColor(COL_COMMENTS));
+    this->single_line_comment_format.setFontItalic(true);
+    rule.pattern = QRegularExpression(QStringLiteral(";.*$"));
+    rule.format = single_line_comment_format;
     this->highlighting_rules.append(rule);
 }
 
