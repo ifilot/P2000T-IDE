@@ -21,7 +21,9 @@ SOURCES += \
     src/serial_interface.cpp \
     src/serialwidget.cpp \
     src/threadcompile.cpp \
-    src/threadrun.cpp
+    src/threadrun.cpp \
+    src/threadtl866.cpp \
+    src/tl866widget.cpp
 
 HEADERS += \
     src/dialogslotselection.h \
@@ -36,7 +38,9 @@ HEADERS += \
     src/serial_interface.h \
     src/serialwidget.h \
     src/threadcompile.h \
-    src/threadrun.h
+    src/threadrun.h \
+    src/threadtl866.h \
+    src/tl866widget.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

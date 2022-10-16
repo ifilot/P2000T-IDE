@@ -24,6 +24,7 @@
 #include "assemblyhighlighter.h"
 #include "serialwidget.h"
 #include "codeeditor.h"
+#include "tl866widget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -44,6 +45,9 @@ private:
 
     // serial interface
     SerialWidget* serial_widget;
+
+    // TL866 interface
+    TL866Widget* tl866_widget;
 
     // other
     std::mutex compile_mutex;

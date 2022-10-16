@@ -59,7 +59,11 @@ class QHexView: public QAbstractScrollArea
         ~QHexView();
 
         inline const QByteArray& get_data() const {
-            return this->m_pdata->getData(0, this->m_pdata->size());
+            if(this->m_pdata != nullptr) {
+                return this->m_pdata->getData(0, this->m_pdata->size());
+            } else {
+                return QByteArray();
+            }
         }
 
     public slots:

@@ -86,6 +86,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->add_groupbox_and_widget("P2000T Cartridge Interface", widget_right_screen_layout, this->serial_widget);
     top_layout->addWidget(widget_right_screen_container);
 
+    // tl866 interface widget
+    this->tl866_widget = new TL866Widget();
+    this->add_groupbox_and_widget("TL866II+ Interface", widget_right_screen_layout, this->tl866_widget);
+    top_layout->addWidget(widget_right_screen_container);
+
     // set statusbar
     statusBar()->showMessage(tr("Ready"));
 
@@ -389,6 +394,12 @@ void MainWindow::slot_compile() {
  * @brief compile file
  */
 void MainWindow::slot_run() {
+    qDebug() << "Running code...";
+    if(this->hex_viewer->get_data().size() == 0) {
+        qDebug() << "Not yet compiled. Cancelling.";
+        return;
+    }
+
     ThreadRun* runthread = new ThreadRun();
     runthread->set_mcode(this->hex_viewer->get_data());
     connect(runthread, SIGNAL(signal_run_complete(void*)), this, SLOT(slot_run_complete(void*)));

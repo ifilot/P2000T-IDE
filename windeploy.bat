@@ -19,7 +19,7 @@ copy assets\images\p2000t-ide.ico bin\p2000t-ide.ico
 set VCINSTALLDIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC
 set VERSION=5.15.2
 set EXECUTABLE=p2000t-ide.exe
-set APPVERSION=0.5.1
+set APPVERSION=0.6.0
 
 if exist C:\Qt\%VERSION%\msvc2019_64\bin\windeployqt.exe (
     C:\Qt\%VERSION%\msvc2019_64\bin\windeployqt.exe bin\%EXECUTABLE% --release --force --compiler-runtime
