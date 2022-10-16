@@ -163,6 +163,21 @@ private slots:
     void slot_serial_assert_data();
 
     /**
+     * @brief Get data from SerialWidget class and parse to hex editor
+     */
+    void slot_tl866_parse_data();
+
+    /**
+     * @brief Parse data from Hex Editor to SerialWidget class
+     */
+    void slot_tl866_assert_data();
+
+    /**
+     * @brief Parse log from TL866 widget to log object
+     */
+    void slot_tl866_parse_log();
+
+    /**
      * @brief closeEvent
      * @param event
      */

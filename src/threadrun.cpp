@@ -89,7 +89,7 @@ QString ThreadRun::build_run_directory() {
             assembler_executable.copy(dir.path() + "/" + files[i]);
         }
 
-        // write source file
+        // write binary file
         QFile outfile(dir.path() + "/BASIC.bin");
         if(outfile.open(QIODevice::WriteOnly)) {
             outfile.write(this->mcode);

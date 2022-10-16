@@ -19,6 +19,16 @@ void ThreadTL866::run() {
         } else {
             qCritical() << "Run process did not finish";
         }
+
+        if(this->operation == 0) {
+            QFile mcodefile(process->workingDirectory() + "/read.bin");
+            if(mcodefile.open(QIODevice::ReadOnly)) {
+                this->data = mcodefile.readAll();
+            } else {
+                throw std::runtime_error("Could not read data file.");
+            }
+        }
+
     } else {
         qCritical() << "Run process did not launch";
         qCritical() << this->process->errorString();
@@ -30,7 +40,17 @@ void ThreadTL866::run() {
     dir.removeRecursively();
 
     // emit run complete
-    emit(signal_read_done(this));
+    switch(this->operation) {
+        case 0:
+            emit(signal_read_done(this));
+        break;
+        case 1:
+            emit(signal_write_done(this));
+        break;
+        default:
+            throw std::logic_error("Invalid operation.");
+        break;
+    }
 }
 
 QProcess* ThreadTL866::build_process() {
@@ -41,7 +61,7 @@ QProcess* ThreadTL866::build_process() {
     if(this->operation == 0) { // read
         arguments.append({"-r", "read.bin"});
     } else if(this->operation == 1) { // write
-        arguments.append({"-w", "write.bin"});
+        arguments.append({"-w", "write.bin", "-s"});
     } else {
         throw std::logic_error("Unknown operation.");
     }
@@ -51,6 +71,15 @@ QProcess* ThreadTL866::build_process() {
     flash_process->setArguments(arguments);
     flash_process->setProcessChannelMode(QProcess::SeparateChannels);
     flash_process->setWorkingDirectory(cwd);
+
+    if(this->operation == 1) { // write operation
+        // write binary file
+        QFile outfile(cwd + "/write.bin");
+        if(outfile.open(QIODevice::WriteOnly)) {
+            outfile.write(this->data);
+        }
+        outfile.close();
+    }
 
     return flash_process;
 }
@@ -89,11 +118,12 @@ void ThreadTL866::slot_parse_output() {
         QByteArray data = this->process->read(numbytes);
         this->output.append(data);
 
-        auto match_iterator = regex.globalMatch(this->output, this->regexoffset);
+        auto match_iterator = regex.globalMatch(this->output);
         while(match_iterator.hasNext()) {
             auto result = match_iterator.next();
             if(!match_iterator.hasNext()) {
-                qDebug() << result.captured(0);
+                int perc = result.captured(0).remove("%").toInt();
+                emit(signal_progress(perc));
             }
         }
     }

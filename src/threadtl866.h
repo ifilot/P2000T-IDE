@@ -21,21 +21,35 @@ private:
     QByteArray output;
     QProcess* process = nullptr;
 
-    const auto& get_output() const {
-        return this->output;
-    }
-
-    const auto& get_data() const {
-        return this->data;
-    }
-
-    int regexoffset = 0;
-
 public:
     explicit ThreadTL866(QObject *parent = nullptr);
 
     inline void set_operation(int _operation) {
         this->operation = _operation;
+    }
+
+    /**
+     * @brief Get output from process that has been transmitted from application
+     * @return
+     */
+    inline const auto& get_output() const {
+        return this->output;
+    }
+
+    /**
+     * @brief Get data that has been read from the chip
+     * @return
+     */
+    inline const auto& get_data() const {
+        return this->data;
+    }
+
+    /**
+     * @brief Get data that has been read from the chip
+     * @return
+     */
+    inline void set_data(const QByteArray& _data) {
+        this->data = _data;
     }
 
     void run();
@@ -47,6 +61,10 @@ private:
 
 signals:
     void signal_read_done(void*);
+
+    void signal_write_done(void*);
+
+    void signal_progress(int progress);
 
 private slots:
     void slot_parse_output();
