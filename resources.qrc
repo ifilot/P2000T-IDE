@@ -19,5 +19,6 @@
         <file>assets/themes/darkorange/icons/handle.png</file>
         <file>assets/code/helloworld.asm</file>
         <file>assets/images/p2000t-ide.ico</file>
+        <file>assets/minipro/minipro.exe</file>
     </qresource>
 </RCC>
