@@ -20,5 +20,7 @@
         <file>assets/code/helloworld.asm</file>
         <file>assets/images/p2000t-ide.ico</file>
         <file>assets/minipro/minipro.exe</file>
+        <file>assets/minipro/infoic.xml</file>
+        <file>assets/minipro/logicic.xml</file>
     </qresource>
 </RCC>
