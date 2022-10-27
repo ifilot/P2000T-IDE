@@ -26,6 +26,7 @@ void ThreadRun::run() {
             auto error_lines = process->readAllStandardError().split('\n');
             for(const QByteArray& line : error_lines) {
                 result << line;
+                //qDebug() << line;
             }
 
             // store output of job
@@ -50,7 +51,7 @@ void ThreadRun::run() {
 QProcess* ThreadRun::build_process() {
     QString cwd = this->build_run_directory();
     qDebug() << tr("Created temporary path: ") << cwd;
-    QStringList arguments = {};
+    QStringList arguments = {"-tape", "P2000.cas"};
     QProcess* blender_process = new QProcess();
     blender_process->setProgram(cwd + "/m2000.exe");
     blender_process->setArguments(arguments);
@@ -75,7 +76,6 @@ QString ThreadRun::build_run_directory() {
             "libwinpthread-1.dll",
             "m2000.exe",
             "m2000.txt",
-            "P2000.cas",
             "p2000rom.bin",
             "zlib1.dll"
         };
@@ -94,6 +94,19 @@ QString ThreadRun::build_run_directory() {
         if(outfile.open(QIODevice::WriteOnly)) {
             outfile.write(this->mcode);
         }
+
+        // write tape file for testing tape I/O
+        QFile casinfile(":/assets/emulator/P2000.cas");
+        if(!casinfile.open(QIODevice::ReadOnly)) {
+            throw std::runtime_error("Could not open emulator file from assets.");
+        } else {
+            QFile outfilecas(dir.path() + "/P2000.cas");
+            if(outfilecas.open(QIODevice::WriteOnly)) {
+                QByteArray cascode = casinfile.readAll();
+                outfilecas.write(cascode);
+            }
+        }
+
         outfile.close();
     } else {
         throw std::runtime_error("Invalid path");
