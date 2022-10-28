@@ -23,5 +23,6 @@
         <file>assets/minipro/infoic.xml</file>
         <file>assets/minipro/logicic.xml</file>
         <file>assets/emulator/Tetris.cas</file>
+        <file>assets/emulator/Galgje.cas</file>
     </qresource>
 </RCC>

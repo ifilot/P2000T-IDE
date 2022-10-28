@@ -10,7 +10,7 @@ AssemblyHighlighter::AssemblyHighlighter(QTextDocument *parent) : QSyntaxHighlig
         "NOP", "LD", "INC", "DEC", "RLCA", "EX", "ADD", "RRCA", "DJNZ", "RLA", "JR",
         "RRA", "DAA", "CPL", "SCF", "CCF", "HALT", "ADC", "SUB", "SBC", "AND", "XOR",
         "OR", "CP", "RET", "POP", "JP", "CALL", "PUSH", "RST", "OUT", "EXX", "IN",
-        "DI", "EI"
+        "DI", "EI", "LDIR"
     };
     for(int i=0; i<opcodes.size(); i++) {
         rule.pattern = QRegularExpression(tr("\\b") + opcodes[i].toLower() + "\\b", QRegularExpression::CaseInsensitiveOption);

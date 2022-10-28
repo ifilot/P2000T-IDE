@@ -97,17 +97,31 @@ QString ThreadRun::build_run_directory() {
         outfile.close();
 
         // write tape file for testing tape I/O
-        QFile casinfile(":/assets/emulator/Tetris.cas");
-        if(!casinfile.open(QIODevice::ReadOnly)) {
-            throw std::runtime_error("Could not open emulator file from assets.");
-        } else {
-            QFile outfilecas(dir.path() + "/P2000.cas");
-            if(outfilecas.open(QIODevice::WriteOnly)) {
-                QByteArray cascode = casinfile.readAll();
-                outfilecas.write(cascode);
+        QFile outfilecas(dir.path() + "/P2000.cas");
+        if(outfilecas.open(QIODevice::WriteOnly)) {
+            // add Tetris
+            QFile casinfile1(":/assets/emulator/Tetris.cas");
+
+            if(!casinfile1.open(QIODevice::ReadOnly)) {
+                throw std::runtime_error("Could not open emulator file from assets.");
             }
-            outfilecas.close();
+
+            QByteArray cascode1 = casinfile1.readAll();
+            outfilecas.write(cascode1);
+            casinfile1.close();
+
+            // add Galgje
+            QFile casinfile2(":/assets/emulator/Galgje.cas");
+
+            if(!casinfile2.open(QIODevice::ReadOnly)) {
+                throw std::runtime_error("Could not open emulator file from assets.");
+            }
+
+            QByteArray cascode2 = casinfile2.readAll();
+            casinfile2.close();
+            outfilecas.write(cascode2);
         }
+        outfilecas.close();
     } else {
         throw std::runtime_error("Invalid path");
     }
