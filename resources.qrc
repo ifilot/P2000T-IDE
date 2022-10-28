@@ -22,5 +22,6 @@
         <file>assets/minipro/minipro.exe</file>
         <file>assets/minipro/infoic.xml</file>
         <file>assets/minipro/logicic.xml</file>
+        <file>assets/emulator/Tetris.cas</file>
     </qresource>
 </RCC>
