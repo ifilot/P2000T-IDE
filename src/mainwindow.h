@@ -16,6 +16,7 @@
 #include <QSettings>
 #include <QStringList>
 #include <QList>
+#include <QTextCursor>
 
 #include "qhexview.h"
 #include "config.h"
@@ -25,6 +26,7 @@
 #include "serialwidget.h"
 #include "codeeditor.h"
 #include "tl866widget.h"
+#include "searchwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -33,6 +35,7 @@ private:
     // code editor
     QLabel* label_active_filename;
     CodeEditor* code_editor;
+    SearchWidget* search_widget;
     AssemblyHighlighter* highlighter;
 
     // hex widget / info
@@ -176,6 +179,11 @@ private slots:
      * @brief Parse log from TL866 widget to log object
      */
     void slot_tl866_parse_log();
+
+    /**
+     * @brief slot_search_code
+     */
+    void slot_search_code();
 
     /**
      * @brief closeEvent

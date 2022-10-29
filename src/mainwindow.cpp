@@ -42,6 +42,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // add text editor parent widget
     top_layout->addWidget(parent_widget_text_edit);
 
+    // add search widget
+    this->search_widget = new SearchWidget();
+    layout_text_edit->addWidget(this->search_widget);
+    connect(this->search_widget, SIGNAL(search()), this, SLOT(slot_search_code()));
+    connect(this->search_widget, SIGNAL(search_done()), this->code_editor, SLOT(setFocus()));
+
     //
     // middle screen -> hex result
     ///
@@ -117,6 +123,7 @@ void MainWindow::build_menu() {
 
     // add drop-down menus
     QMenu *menuFile = menuBar->addMenu(tr("&File"));
+    QMenu *menuEdit = menuBar->addMenu(tr("&Edit"));
     QMenu *menuBuild = menuBar->addMenu(tr("&Build"));
     QMenu *menuHelp = menuBar->addMenu(tr("&Help"));
 
@@ -178,6 +185,21 @@ void MainWindow::build_menu() {
         menu_recent_files->addAction(action);
         connect(action, &QAction::triggered, this, &MainWindow::slot_load_file);
     }
+
+    /*
+     * Edit menu
+     */
+
+    // find
+    QAction *action_search = new QAction(menuEdit);
+    action_search->setText(tr("Search"));
+    action_search->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
+    menuEdit->addAction(action_search);
+    connect(action_search, SIGNAL(triggered()), this->search_widget, SLOT(show_search_widget()));
+
+    /*
+     * Build menu
+     */
 
     // Compile
     QAction *action_compile = new QAction(menuBuild);
@@ -644,6 +666,14 @@ void MainWindow::slot_tl866_parse_log() {
 
     // send log to log object
     this->log_viewer->setPlainText(logstring);
+}
+
+/**
+ * @brief slot_search_code
+ */
+void MainWindow::slot_search_code() {
+    QString word = this->search_widget->get_line_edit_ptr()->text();
+    this->code_editor->search(word);
 }
 
 /**

@@ -2,6 +2,8 @@
 #define CODEEDITOR_H
 
 #include <QPlainTextEdit>
+#include <QDebug>
+#include <QShortCut>
 
 QT_BEGIN_NAMESPACE
 class QPaintEvent;
@@ -12,10 +14,7 @@ QT_END_NAMESPACE
 
 class LineNumberArea;
 
-//![codeeditordefinition]
-
-class CodeEditor : public QPlainTextEdit
-{
+class CodeEditor : public QPlainTextEdit {
     Q_OBJECT
 
 public:
@@ -23,6 +22,8 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+
+    void search(const QString& word);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -32,12 +33,15 @@ private slots:
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &rect, int dy);
 
+    void home();
+    void end();
+
 private:
     QWidget *lineNumberArea;
 };
 
-class LineNumberArea : public QWidget
-{
+class LineNumberArea : public QWidget {
+
 public:
     LineNumberArea(CodeEditor *editor) : QWidget(editor), codeEditor(editor)
     {}

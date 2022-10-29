@@ -3,10 +3,7 @@
 #include <QPainter>
 #include <QTextBlock>
 
-//![constructor]
-
-CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
-{
+CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent) {
     lineNumberArea = new LineNumberArea(this);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
@@ -15,14 +12,16 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+
+    // create shortcuts
+    QShortcut *shortcuthome = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Home), this);
+    QObject::connect(shortcuthome, SIGNAL(activated()), this, SLOT(home()));
+
+    QShortcut *shortcutend = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_End), this);
+    QObject::connect(shortcutend, SIGNAL(activated()), this, SLOT(end()));
 }
 
-//![constructor]
-
-//![extraAreaWidth]
-
-int CodeEditor::lineNumberAreaWidth()
-{
+int CodeEditor::lineNumberAreaWidth() {
     int digits = 1;
     int max = qMax(1, blockCount());
     while (max >= 10) {
@@ -35,21 +34,11 @@ int CodeEditor::lineNumberAreaWidth()
     return space;
 }
 
-//![extraAreaWidth]
-
-//![slotUpdateExtraAreaWidth]
-
-void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
-{
+void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */) {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
 
-//![slotUpdateExtraAreaWidth]
-
-//![slotUpdateRequest]
-
-void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
-{
+void CodeEditor::updateLineNumberArea(const QRect &rect, int dy) {
     if (dy)
         lineNumberArea->scroll(0, dy);
     else
@@ -59,24 +48,24 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
         updateLineNumberAreaWidth(0);
 }
 
-//![slotUpdateRequest]
+void CodeEditor::search(const QString& word) {
+    bool found = this->find(word);
+    if(!found) {
+        QTextCursor cursor(this->document());
+        cursor.movePosition(QTextCursor::Start);
+        this->setTextCursor(cursor);
+        found = this->find(word);
+    }
+}
 
-//![resizeEvent]
-
-void CodeEditor::resizeEvent(QResizeEvent *e)
-{
+void CodeEditor::resizeEvent(QResizeEvent *e) {
     QPlainTextEdit::resizeEvent(e);
 
     QRect cr = contentsRect();
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
-//![resizeEvent]
-
-//![cursorPositionChanged]
-
-void CodeEditor::highlightCurrentLine()
-{
+void CodeEditor::highlightCurrentLine() {
     QList<QTextEdit::ExtraSelection> extraSelections;
 
     if (!isReadOnly()) {
@@ -94,25 +83,15 @@ void CodeEditor::highlightCurrentLine()
     setExtraSelections(extraSelections);
 }
 
-//![cursorPositionChanged]
-
-//![extraAreaPaintEvent_0]
-
-void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
-{
+void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
     QPainter painter(lineNumberArea);
     painter.fillRect(event->rect(), QColor(0xe8e4cf));
 
-//![extraAreaPaintEvent_0]
-
-//![extraAreaPaintEvent_1]
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
     int bottom = top + qRound(blockBoundingRect(block).height());
-//![extraAreaPaintEvent_1]
 
-//![extraAreaPaintEvent_2]
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
@@ -126,4 +105,16 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         bottom = top + qRound(blockBoundingRect(block).height());
         ++blockNumber;
     }
+}
+
+void CodeEditor::home() {
+    QTextCursor cursor(this->document());
+    cursor.movePosition(QTextCursor::Start);
+    this->setTextCursor(cursor);
+}
+
+void CodeEditor::end() {
+    QTextCursor cursor(this->document());
+    cursor.movePosition(QTextCursor::End);
+    this->setTextCursor(cursor);
 }
