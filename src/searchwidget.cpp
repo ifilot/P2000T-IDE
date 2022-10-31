@@ -29,5 +29,6 @@ void SearchWidget::show_search_widget() {
 
 void SearchWidget::hide() {
     this->setVisible(false);
+    this->line_edit->clear();
     emit(search_done());
 }

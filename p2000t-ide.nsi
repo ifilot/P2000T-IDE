@@ -7,7 +7,7 @@
 ; change this to wherever the files to be packaged reside
 !define srcdir "."
  
-!define company "RETRO6502.nl"
+!define company "RETROZWICK"
  
 !define prodname "p2000t-ide"
 !define exec "p2000t-ide.exe"

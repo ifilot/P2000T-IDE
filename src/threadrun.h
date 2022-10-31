@@ -15,16 +15,27 @@
 class ThreadRun : public QThread {
     Q_OBJECT
 
+public:
+    enum class ProcessConfiguration {
+        REGULAR = 0,
+        MCODE_AS_CAS = 1,
+    };
+
 private:
     QByteArray mcode;
-
     QStringList output;
+
+    ProcessConfiguration process_configuration = ProcessConfiguration::REGULAR;
 
 public:
     ThreadRun();
 
     inline void set_mcode(const QByteArray& _mcode) {
         this->mcode = _mcode;
+    }
+
+    inline void set_process_configuration(ProcessConfiguration config) {
+        this->process_configuration = config;
     }
 
     QProcess* build_process();

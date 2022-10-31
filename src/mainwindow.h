@@ -131,6 +131,11 @@ private slots:
     void slot_run();
 
     /**
+     * @brief slot_run_mcode_as_cas
+     */
+    void slot_run_mcode_as_cas();
+
+    /**
      * @brief exit program
      */
     void slot_exit();

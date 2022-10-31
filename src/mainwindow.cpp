@@ -215,6 +215,13 @@ void MainWindow::build_menu() {
     action_run->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
     connect(action_run, &QAction::triggered, this, &MainWindow::slot_run);
 
+    // Run machine code as CAS file
+    QAction *action_run_mcode_as_cas = new QAction(menuBuild);
+    action_run_mcode_as_cas->setText(tr("Run machine code as CAS"));
+    menuBuild->addAction(action_run_mcode_as_cas);
+    //action_run_mcode_as_cas->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
+    connect(action_run_mcode_as_cas, &QAction::triggered, this, &MainWindow::slot_run_mcode_as_cas);
+
     // quit
     menuFile->addSeparator();
     QAction *action_quit = new QAction(menuFile);
@@ -429,6 +436,23 @@ void MainWindow::slot_run() {
 
     ThreadRun* runthread = new ThreadRun();
     runthread->set_mcode(this->hex_viewer->get_data());
+    connect(runthread, SIGNAL(signal_run_complete(void*)), this, SLOT(slot_run_complete(void*)));
+    runthread->start();
+}
+
+/**
+ * @brief slot_run_mcode_as_cas
+ */
+void MainWindow::slot_run_mcode_as_cas() {
+    qDebug() << "Running machine code as CAS...";
+    if(this->hex_viewer->get_data().size() == 0) {
+        qDebug() << "Nothing here, quitting.";
+        return;
+    }
+
+    ThreadRun* runthread = new ThreadRun();
+    runthread->set_mcode(this->hex_viewer->get_data());
+    runthread->set_process_configuration(ThreadRun::ProcessConfiguration::MCODE_AS_CAS);
     connect(runthread, SIGNAL(signal_run_complete(void*)), this, SLOT(slot_run_complete(void*)));
     runthread->start();
 }

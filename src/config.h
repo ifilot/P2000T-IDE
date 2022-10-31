@@ -22,9 +22,9 @@
 #define CONFIG_H
 
 #define PROGRAM_NAME "P2000T-ide"
-#define PROGRAM_VERSION "0.8.0"
-#define PROGRAM_ORGANIZATION "RETRO6502"
-#define PROGRAM_DOMAIN "retro6502.nl"
+#define PROGRAM_VERSION "0.9.0"
+#define PROGRAM_ORGANIZATION "RETROZWICK"
+#define PROGRAM_DOMAIN "retrozwick.nl"
 
 #define UNUSED(x) (void)(x)
 
