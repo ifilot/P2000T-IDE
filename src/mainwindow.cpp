@@ -10,34 +10,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     top_layout->setMargin(5);
     w->setLayout(top_layout);
 
-    //
+    //-------------------------------------------------------------------------
     // left screen -> text editor
-    //
+    //-------------------------------------------------------------------------
     QGroupBox* parent_widget_text_edit = new QGroupBox("Source code editor");
     parent_widget_text_edit->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     QVBoxLayout* layout_text_edit = new QVBoxLayout();
     parent_widget_text_edit->setLayout(layout_text_edit);
 
-    // add active file label
-    this->label_active_filename = new QLabel("untitled");
-    layout_text_edit->addWidget(this->label_active_filename);
-
-    // add text editor
-    this->code_editor = new CodeEditor();
-    QFont font;
-    font.setFamily("Courier");
-    font.setStyleHint(QFont::Monospace);
-    font.setFixedPitch(true);
-    font.setPointSize(10);
-    this->code_editor->setFont(font);
-    this->highlighter = new AssemblyHighlighter(this->code_editor->document());
-
-    // set tab stop
-    const int tabStop = 4;
-    QFontMetrics metrics(font);
-    this->code_editor->setTabStopWidth(tabStop * metrics.width(' '));
-    layout_text_edit->addWidget(this->code_editor);
-    connect(this->code_editor, SIGNAL(textChanged()), this, SLOT(slot_editor_onchange()));
+    // add tabs
+    this->code_tabs = new QTabWidget();
+    layout_text_edit->addWidget(this->code_tabs);
+    //this->new_code_editor();
 
     // add text editor parent widget
     top_layout->addWidget(parent_widget_text_edit);
@@ -46,11 +30,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->search_widget = new SearchWidget();
     layout_text_edit->addWidget(this->search_widget);
     connect(this->search_widget, SIGNAL(search()), this, SLOT(slot_search_code()));
-    connect(this->search_widget, SIGNAL(search_done()), this->code_editor, SLOT(setFocus()));
+    //connect(this->search_widget, SIGNAL(search_done()), this->code_editor, SLOT(setFocus()));
 
-    //
+    QShortcut *shortcut_tab_next = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this);
+    connect(shortcut_tab_next, SIGNAL(activated()), this, SLOT(toggletab_forward()));
+
+    QShortcut *shortcut_tab_prev = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this);
+    connect(shortcut_tab_prev, SIGNAL(activated()), this, SLOT(toggletab_backward()));
+
+    //-------------------------------------------------------------------------
     // middle screen -> hex result
-    ///
+    //-------------------------------------------------------------------------
     QGroupBox* hex_viewer_container = new QGroupBox("Machine code viewer");
     hex_viewer_container->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     QVBoxLayout* layout_hexviewer = new QVBoxLayout();
@@ -75,10 +65,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     layout_hexviewer->addWidget(this->hex_viewer);
     top_layout->addWidget(hex_viewer_container);
 
-    //
+    //-------------------------------------------------------------------------
     // right screen -> log and upload interface
-    //
+    //-------------------------------------------------------------------------
     QWidget* widget_right_screen_container = new QWidget();
+    widget_right_screen_container->setMaximumWidth(350);
     QVBoxLayout* widget_right_screen_layout = new QVBoxLayout();
     widget_right_screen_container->setLayout(widget_right_screen_layout);
 
@@ -126,6 +117,13 @@ void MainWindow::build_menu() {
     QMenu *menuEdit = menuBar->addMenu(tr("&Edit"));
     QMenu *menuBuild = menuBar->addMenu(tr("&Build"));
     QMenu *menuHelp = menuBar->addMenu(tr("&Help"));
+
+    // open
+    QAction *action_new = new QAction(menuFile);
+    action_new->setText(tr("New"));
+    action_new->setShortcuts(QKeySequence::New);
+    menuFile->addAction(action_new);
+    connect(action_new, &QAction::triggered, this, &MainWindow::slot_new);
 
     // open
     QAction *action_open = new QAction(menuFile);
@@ -245,11 +243,25 @@ void MainWindow::build_menu() {
 }
 
 /**
+ * @brief create a new file
+ */
+void MainWindow::slot_new() {
+    CodeEditor* code_editor = this->new_code_editor();
+    this->code_tabs->setCurrentIndex(this->code_tabs->indexOf(code_editor));
+    this->slot_save_as();
+}
+
+/**
  * @brief open a file
  */
 void MainWindow::slot_open() {
+    // try to set proper path
+    QString url = this->code_tabs->tabText(this->code_tabs->currentIndex());
+    QFileInfo finfo(url);
+    QString path = finfo.absolutePath();
+
     QString filename = QFileDialog::getOpenFileName(this, tr("Open File"),
-                                                    "",
+                                                    path,
                                                     tr("Assembly source files (*.asm)"));
 
     // do nothing if user has cancelled
@@ -261,12 +273,17 @@ void MainWindow::slot_open() {
     QFile sourcefile(filename);
     if(sourcefile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QByteArray contents = sourcefile.readAll();
-        this->code_editor->setPlainText(contents);
+
+        CodeEditor *editor = this->new_code_editor();
+
+        editor->set_filename(filename);
+        editor->setPlainText(contents);
+        this->code_tabs->setCurrentIndex(this->code_tabs->indexOf(editor));
+        this->code_tabs->setTabText(this->code_tabs->indexOf(editor), filename);
+
         sourcefile.close();
         this->update_recent_files_list(filename);
-    }
-
-    this->label_active_filename->setText(filename);
+    }    
 }
 
 /**
@@ -274,30 +291,25 @@ void MainWindow::slot_open() {
  */
 void MainWindow::slot_save() {
     // do not save if there are no changed
-    if(!this->label_active_filename->text().endsWith('*')) {
+    CodeEditor* code_editor = this->get_active_code_editor();
+    if(!code_editor->has_changed()) {
         return;
     }
 
-    // ask user where to save file
-    if(this->label_active_filename->text().startsWith("untitled")) {
-        return this->slot_save_as();
-    }
-
     // remove asterisk
-    QString url = this->label_active_filename->text();
-    url.resize(this->label_active_filename->text().size()-1);
+    QString url = code_editor->get_filename();
     QFile sourcefile(url);
     if(sourcefile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&sourcefile);
-        stream << this->code_editor->toPlainText();
+        stream << code_editor->toPlainText();
         sourcefile.close();
         update_recent_files_list(url);
+
+        // remove asterisk
+        this->code_tabs->setTabText(this->code_tabs->indexOf(code_editor), url);
     }
 
     qDebug() << "Saved sourcecode to " << url;
-
-    // rewrite label
-    this->label_active_filename->setText(url);
 }
 
 /**
@@ -315,16 +327,18 @@ void MainWindow::slot_save_as() {
 
     QFile sourcefile(filename);
     if(sourcefile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        CodeEditor* editor = this->get_active_code_editor();
         QTextStream stream(&sourcefile);
-        stream << this->code_editor->toPlainText();
+        stream << editor->toPlainText();
+        editor->set_filename(filename);
         sourcefile.close();
 
         update_recent_files_list(filename);
     }
     qDebug() << "Saved sourcecode to new file " << filename;
 
-    // rewrite label
-    this->label_active_filename->setText(filename);
+    // set label
+    this->code_tabs->setTabText(this->code_tabs->currentIndex(), filename);
 }
 
 /**
@@ -383,13 +397,16 @@ void MainWindow::slot_load_file() {
         QFile source_file(filename);
         if(source_file.exists()) {
             if(source_file.open(QIODevice::ReadOnly)) {
-                this->code_editor->setPlainText(source_file.readAll());
+                CodeEditor *editor = this->new_code_editor();
+                editor->set_filename(filename);
+                editor->setPlainText(source_file.readAll());
+                this->code_tabs->setCurrentIndex(this->code_tabs->indexOf(editor));
             }
             source_file.close();
 
             if(!filename.startsWith(":/assets")) {
                 this->update_recent_files_list(filename);
-                this->label_active_filename->setText(filename);
+                this->code_tabs->setTabText(this->code_tabs->currentIndex(), filename);
             }
 
         }
@@ -416,10 +433,10 @@ void MainWindow::slot_compile() {
     // always save before compiling
     this->slot_save();
 
-    QString source = this->code_editor->toPlainText();
+    QString source = this->get_active_code_editor()->get_filename();
 
     this->compile_job = std::make_unique<ThreadCompile>();
-    compile_job->set_source(source);
+    compile_job->set_source_file(source);
     connect(compile_job.get(), SIGNAL(signal_compilation_done()), this, SLOT(slot_compilation_done()));
     compile_job->start();
 }
@@ -635,13 +652,33 @@ void MainWindow::write_settings() {
     // do something to settings
 }
 
-/**
- * @brief slot when text editor has changed
- */
-void MainWindow::slot_editor_onchange() {
-    if(!this->label_active_filename->text().endsWith('*')) {
-        this->label_active_filename->setText(this->label_active_filename->text() + '*');
-    }
+CodeEditor* MainWindow::new_code_editor() {
+    // add text editor
+    CodeEditor* code_editor = new CodeEditor(this->code_tabs);
+    QFont font;
+    font.setFamily("Courier");
+    font.setStyleHint(QFont::Monospace);
+    font.setFixedPitch(true);
+    font.setPointSize(10);
+    code_editor->setFont(font);
+    this->highlighter = new AssemblyHighlighter(code_editor->document());
+
+    // set tab stop
+    const int tabStop = 4;
+    QFontMetrics metrics(font);
+    code_editor->setTabStopWidth(tabStop * metrics.width(' '));
+    this->code_tabs->addTab(code_editor, "new");
+    //connect(this->code_editor, SIGNAL(textChanged()), this, SLOT(slot_editor_onchange()));
+
+    return code_editor;
+}
+
+CodeEditor* MainWindow::get_active_code_editor() {
+    return static_cast<CodeEditor*>(this->code_tabs->currentWidget());
+}
+
+void MainWindow::delete_code_editor(CodeEditor*) {
+
 }
 
 /**
@@ -697,7 +734,7 @@ void MainWindow::slot_tl866_parse_log() {
  */
 void MainWindow::slot_search_code() {
     QString word = this->search_widget->get_line_edit_ptr()->text();
-    this->code_editor->search(word);
+    this->get_active_code_editor()->search(word);
 }
 
 /**
@@ -706,4 +743,28 @@ void MainWindow::slot_search_code() {
 void MainWindow::closeEvent(QCloseEvent *event){
     this->write_settings();
     QMainWindow::closeEvent(event);
+}
+
+/**
+ * @brief Go to next tab
+ */
+void MainWindow::toggletab_forward() {
+    int curid = this->code_tabs->currentIndex();
+    if(curid == this->code_tabs->count()-1) {
+        this->code_tabs->setCurrentIndex(0);
+    } else {
+        this->code_tabs->setCurrentIndex(curid - 1);
+    }
+}
+
+/**
+ * @brief Go to previous tab
+ */
+void MainWindow::toggletab_backward() {
+    int curid = this->code_tabs->currentIndex();
+    if(curid == 0) {
+        this->code_tabs->setCurrentIndex(this->code_tabs->count() - 1);
+    } else {
+        this->code_tabs->setCurrentIndex(curid + 1);
+    }
 }

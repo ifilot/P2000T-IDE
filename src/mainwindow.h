@@ -17,6 +17,7 @@
 #include <QStringList>
 #include <QList>
 #include <QTextCursor>
+#include <QTabWidget>
 
 #include "qhexview.h"
 #include "config.h"
@@ -33,8 +34,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 private:
     // code editor
-    QLabel* label_active_filename;
-    CodeEditor* code_editor;
+    QVector<CodeEditor*> code_editors;
+    QTabWidget* code_tabs;
     SearchWidget* search_widget;
     AssemblyHighlighter* highlighter;
 
@@ -89,7 +90,18 @@ private:
      */
     void write_settings();
 
+    CodeEditor* new_code_editor();
+
+    CodeEditor* get_active_code_editor();
+
+    void delete_code_editor(CodeEditor*);
+
 private slots:
+    /**
+     * @brief create a new file
+     */
+    void slot_new();
+
     /**
      * @brief open a file
      */
@@ -156,11 +168,6 @@ private slots:
     void slot_run_complete(void*);
 
     /**
-     * @brief slot when text editor has changed
-     */
-    void slot_editor_onchange();
-
-    /**
      * @brief Get data from SerialWidget class and parse to hex editor
      */
     void slot_serial_parse_data();
@@ -195,5 +202,15 @@ private slots:
      * @param event
      */
     void closeEvent(QCloseEvent *event) override;
+
+    /**
+     * @brief Go to next tab
+     */
+    void toggletab_forward();
+
+    /**
+     * @brief Go to previous tab
+     */
+    void toggletab_backward();
 };
 #endif // MAINWINDOW_H

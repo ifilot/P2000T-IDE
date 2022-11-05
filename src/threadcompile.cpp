@@ -47,7 +47,7 @@ void ThreadCompile::run() {
     }
 
     // clean up folder
-    QDir dir(process->workingDirectory());
+    QDir dir(this->temppath);
     dir.removeRecursively();
 
     // emit compilation done
@@ -59,16 +59,20 @@ void ThreadCompile::run() {
 }
 
 QProcess* ThreadCompile::build_process() {
-    QString cwd = this->build_compilation_directory();
-    qDebug() << tr("Created temporary path: ") << cwd;
-    QStringList arguments = {"source.asm", "mcode.bin"};
-    QProcess* blender_process = new QProcess();
-    blender_process->setProgram(cwd + "/tniasm.exe");
-    blender_process->setArguments(arguments);
-    blender_process->setProcessChannelMode(QProcess::SeparateChannels);
-    blender_process->setWorkingDirectory(cwd);
+    QString exec_path = this->build_compilation_directory();
+    this->temppath = exec_path;
+    qDebug() << tr("Created temporary path: ") << exec_path;
+    QProcess* process = new QProcess();
+    process->setProgram(exec_path + "/tniasm.exe");
+    process->setProcessChannelMode(QProcess::SeparateChannels);
 
-    return blender_process;
+    QFileInfo finfo(this->sourcefile);
+    process->setWorkingDirectory(finfo.absolutePath());
+
+    QStringList arguments = {finfo.fileName(), "mcode.bin"};
+    process->setArguments(arguments);
+
+    return process;
 }
 
 QString ThreadCompile::build_compilation_directory() {
@@ -81,14 +85,6 @@ QString ThreadCompile::build_compilation_directory() {
             throw std::runtime_error("Could not open assembler file from assets.");
         }
         assembler_executable.copy(dir.path() + "/tniasm.exe");
-
-        // write source file
-        QFile outfile(dir.path() + "/source.asm");
-        if(outfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            QTextStream stream(&outfile);
-            stream << this->source;
-        }
-        outfile.close();
     } else {
         throw std::runtime_error("Invalid path");
     }

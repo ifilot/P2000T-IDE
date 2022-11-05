@@ -16,15 +16,16 @@ class ThreadCompile : public QThread {
     Q_OBJECT
 
 private:
-    QString source;
+    QString sourcefile;
     QStringList output;
     QByteArray mcode;
+    QString temppath;
 
 public:
     ThreadCompile();
 
-    inline void set_source(const QString& src) {
-        this->source = src;
+    inline void set_source_file(const QString& src) {
+        this->sourcefile = src;
     }
 
     inline const QStringList& get_output() const {
