@@ -18,10 +18,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QVBoxLayout* layout_text_edit = new QVBoxLayout();
     parent_widget_text_edit->setLayout(layout_text_edit);
 
-    // add tabs
+    // add code tabs
     this->code_tabs = new QTabWidget();
+    this->code_tabs->setTabsClosable(true);
+    connect(this->code_tabs, SIGNAL(tabCloseRequested(int)), this, SLOT(slot_close_file(int)));
     layout_text_edit->addWidget(this->code_tabs);
-    //this->new_code_editor();
 
     // add text editor parent widget
     top_layout->addWidget(parent_widget_text_edit);
@@ -30,13 +31,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->search_widget = new SearchWidget();
     layout_text_edit->addWidget(this->search_widget);
     connect(this->search_widget, SIGNAL(search()), this, SLOT(slot_search_code()));
-    //connect(this->search_widget, SIGNAL(search_done()), this->code_editor, SLOT(setFocus()));
 
-    QShortcut *shortcut_tab_next = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this);
-    connect(shortcut_tab_next, SIGNAL(activated()), this, SLOT(toggletab_forward()));
+    QShortcut *shortcut_tab_next = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this->code_tabs);
+    connect(shortcut_tab_next, SIGNAL(activated()), this, SLOT(slot_toggletab_forward()));
 
-    QShortcut *shortcut_tab_prev = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this);
-    connect(shortcut_tab_prev, SIGNAL(activated()), this, SLOT(toggletab_backward()));
+    QShortcut *shortcut_tab_prev = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this->code_tabs);
+    connect(shortcut_tab_prev, SIGNAL(activated()), this, SLOT(slot_toggletab_backward()));
+
+    QShortcut *shortcut_tab_close = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this->code_tabs);
+    connect(shortcut_tab_close, SIGNAL(activated()), this, SLOT(slot_close_tab()));
 
     //-------------------------------------------------------------------------
     // middle screen -> hex result
@@ -269,17 +272,26 @@ void MainWindow::slot_open() {
         return;
     }
 
+    // check if a tab with the given filename already exists, if so,
+    // give it focus
+    for(int i=0; i<this->code_tabs->count(); i++) {
+        if(static_cast<CodeEditor*>(this->code_tabs->widget(i))->get_filename() == filename) {
+            this->code_tabs->setCurrentIndex(i);
+            return;
+        }
+    }
+
     // write source file
     QFile sourcefile(filename);
     if(sourcefile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QByteArray contents = sourcefile.readAll();
-
         CodeEditor *editor = this->new_code_editor();
 
         editor->set_filename(filename);
         editor->setPlainText(contents);
         this->code_tabs->setCurrentIndex(this->code_tabs->indexOf(editor));
         this->code_tabs->setTabText(this->code_tabs->indexOf(editor), filename);
+        editor->unset_changed();
 
         sourcefile.close();
         this->update_recent_files_list(filename);
@@ -307,6 +319,9 @@ void MainWindow::slot_save() {
 
         // remove asterisk
         this->code_tabs->setTabText(this->code_tabs->indexOf(code_editor), url);
+
+        // remove changed status
+        code_editor->unset_changed();
     }
 
     qDebug() << "Saved sourcecode to " << url;
@@ -330,8 +345,11 @@ void MainWindow::slot_save_as() {
         CodeEditor* editor = this->get_active_code_editor();
         QTextStream stream(&sourcefile);
         stream << editor->toPlainText();
-        editor->set_filename(filename);
         sourcefile.close();
+
+        // set filename and update status
+        editor->set_filename(filename);
+        editor->unset_changed();
 
         update_recent_files_list(filename);
     }
@@ -383,7 +401,10 @@ void MainWindow::slot_save_machine_code() {
 }
 
 /**
- * @brief slot_load_file
+ * @brief Load a file from the menu listing
+ *
+ * Load a file from the menu and create a new code editor tab
+ * for it. If such a tab already exists, give that tab focus.
  */
 void MainWindow::slot_load_file() {
     // get file
@@ -397,6 +418,16 @@ void MainWindow::slot_load_file() {
         QFile source_file(filename);
         if(source_file.exists()) {
             if(source_file.open(QIODevice::ReadOnly)) {
+                // check if a tab with the given filename already exists, if so,
+                // give it focus
+                for(int i=0; i<this->code_tabs->count(); i++) {
+                    if(static_cast<CodeEditor*>(this->code_tabs->widget(i))->get_filename() == filename) {
+                        this->code_tabs->setCurrentIndex(i);
+                        return;
+                    }
+                }
+
+                // if not, create a new tab and give that focus
                 CodeEditor *editor = this->new_code_editor();
                 editor->set_filename(filename);
                 editor->setPlainText(source_file.readAll());
@@ -407,6 +438,7 @@ void MainWindow::slot_load_file() {
             if(!filename.startsWith(":/assets")) {
                 this->update_recent_files_list(filename);
                 this->code_tabs->setTabText(this->code_tabs->currentIndex(), filename);
+                static_cast<CodeEditor*>(this->code_tabs->currentWidget())->unset_changed();
             }
 
         }
@@ -414,7 +446,38 @@ void MainWindow::slot_load_file() {
 }
 
 /**
- * @brief compile file
+ * @brief Close the file that is opened
+ */
+void MainWindow::slot_close_file(int tab_id) {
+    CodeEditor* code_editor = static_cast<CodeEditor*>(this->code_tabs->widget(tab_id));
+    if(code_editor->has_changed()) {
+        // ask user whether to save any changes
+        int reply = QMessageBox::question(this, "Close tab", "Would you like to save this file?",
+                                          QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
+        switch(reply) {
+            case QMessageBox::Yes:
+                this->code_tabs->setCurrentIndex(tab_id);
+                this->slot_save();
+                this->code_tabs->removeTab(tab_id);
+            break;
+            case QMessageBox::No:
+                this->code_tabs->removeTab(tab_id);
+            break;
+            case QMessageBox::Cancel:
+                return;
+            break;
+        }
+
+    } else {
+        this->code_tabs->removeTab(tab_id);
+    }
+}
+
+/**
+ * @brief Compile active file
+ *
+ * Compile (assemble) the source code in the currently active Code Editor. Perform
+ * this compilation in the folder the source code resides in.
  */
 void MainWindow::slot_compile() {
     // try to lock, else wait
@@ -748,7 +811,7 @@ void MainWindow::closeEvent(QCloseEvent *event){
 /**
  * @brief Go to next tab
  */
-void MainWindow::toggletab_forward() {
+void MainWindow::slot_toggletab_forward() {
     int curid = this->code_tabs->currentIndex();
     if(curid == this->code_tabs->count()-1) {
         this->code_tabs->setCurrentIndex(0);
@@ -760,11 +823,19 @@ void MainWindow::toggletab_forward() {
 /**
  * @brief Go to previous tab
  */
-void MainWindow::toggletab_backward() {
+void MainWindow::slot_toggletab_backward() {
     int curid = this->code_tabs->currentIndex();
     if(curid == 0) {
         this->code_tabs->setCurrentIndex(this->code_tabs->count() - 1);
     } else {
         this->code_tabs->setCurrentIndex(curid + 1);
     }
+}
+
+/**
+ * @brief Close tab
+ */
+void MainWindow::slot_close_tab() {
+    int curid = this->code_tabs->currentIndex();
+    this->code_tabs->tabCloseRequested(curid);
 }

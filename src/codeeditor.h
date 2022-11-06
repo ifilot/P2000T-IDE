@@ -27,7 +27,11 @@ public:
     CodeEditor(QWidget *parent = nullptr);   
 
     bool has_changed() const {
-        return flag_changed;
+        return this->flag_changed;
+    }
+
+    void unset_changed() {
+        this->flag_changed = false;
     }
 
     int get_size() const {

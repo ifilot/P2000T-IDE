@@ -128,12 +128,23 @@ private slots:
     void slot_save_machine_code();
 
     /**
-     * @brief slot_load_example_file
+     * @brief Load a file from the menu listing
+     *
+     * Load a file from the menu and create a new code editor tab
+     * for it. If such a tab already exists, give that tab focus.
      */
     void slot_load_file();
 
     /**
-     * @brief compile a file
+     * @brief Close the file that is opened
+     */
+    void slot_close_file(int tab_id);
+
+    /**
+     * @brief Compile active file
+     *
+     * Compile (assemble) the source code in the currently active Code Editor. Perform
+     * this compilation in the folder the source code resides in.
      */
     void slot_compile();
 
@@ -206,11 +217,16 @@ private slots:
     /**
      * @brief Go to next tab
      */
-    void toggletab_forward();
+    void slot_toggletab_forward();
 
     /**
      * @brief Go to previous tab
      */
-    void toggletab_backward();
+    void slot_toggletab_backward();
+
+    /**
+     * @brief Close tab
+     */
+    void slot_close_tab();
 };
 #endif // MAINWINDOW_H
