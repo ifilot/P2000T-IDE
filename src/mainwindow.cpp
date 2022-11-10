@@ -32,10 +32,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     layout_text_edit->addWidget(this->search_widget);
     connect(this->search_widget, SIGNAL(search()), this, SLOT(slot_search_code()));
 
-    QShortcut *shortcut_tab_next = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this->code_tabs);
+    QShortcut *shortcut_tab_next = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this->code_tabs);
     connect(shortcut_tab_next, SIGNAL(activated()), this, SLOT(slot_toggletab_forward()));
 
-    QShortcut *shortcut_tab_prev = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this->code_tabs);
+    QShortcut *shortcut_tab_prev = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this->code_tabs);
     connect(shortcut_tab_prev, SIGNAL(activated()), this, SLOT(slot_toggletab_backward()));
 
     QShortcut *shortcut_tab_close = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this->code_tabs);
@@ -816,7 +816,7 @@ void MainWindow::slot_toggletab_forward() {
     if(curid == this->code_tabs->count()-1) {
         this->code_tabs->setCurrentIndex(0);
     } else {
-        this->code_tabs->setCurrentIndex(curid - 1);
+        this->code_tabs->setCurrentIndex(curid + 1);
     }
 }
 
@@ -828,7 +828,7 @@ void MainWindow::slot_toggletab_backward() {
     if(curid == 0) {
         this->code_tabs->setCurrentIndex(this->code_tabs->count() - 1);
     } else {
-        this->code_tabs->setCurrentIndex(curid + 1);
+        this->code_tabs->setCurrentIndex(curid - 1);
     }
 }
 
