@@ -32,7 +32,13 @@ AssemblyHighlighter::AssemblyHighlighter(QTextDocument *parent) : QSyntaxHighlig
 
     // labels
     this->keyword_format.setForeground(QColor(BASE0C));
-    rule.pattern = QRegularExpression(QStringLiteral("^[A-Za-z0-9]+:\\s*$"));
+    rule.pattern = QRegularExpression(QStringLiteral("^[A-Za-z0-9_]+:\\s*$"));
+    rule.format = this->keyword_format;
+    this->highlighting_rules.append(rule);
+
+    // sublabels
+    this->keyword_format.setForeground(QColor(BASE0C));
+    rule.pattern = QRegularExpression(QStringLiteral("^\\.[A-Za-z0-9_]+:\\s*"));
     rule.format = this->keyword_format;
     this->highlighting_rules.append(rule);
 

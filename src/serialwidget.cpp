@@ -105,7 +105,7 @@ void SerialWidget::select_com_port() {
     this->serial_interface->close_port();
     this->label_serial->setText(tr("Port: ") + this->combobox_serial_ports->currentText());
     this->label_board_id->setText(tr("Board id: ") + tr(board_info.c_str()));
-    if(board_info.substr(0,8) == "P2k-32u4") {
+    if(board_info.substr(0,9) == "Ph2k-32u4") {
         this->button_read_cartridge->setEnabled(true);
         this->button_write_cartridge->setEnabled(true);
     }
@@ -282,6 +282,7 @@ void SerialWidget::flash_chip_id_error(unsigned int chip_id) {
 
     // reset flash button
     this->progress_bar_load->setEnabled(true);
+    this->enable_all_buttons();
 }
 
 /**
