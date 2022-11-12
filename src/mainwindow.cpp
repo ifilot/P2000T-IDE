@@ -14,12 +14,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // left screen -> text editor
     //-------------------------------------------------------------------------
     QGroupBox* parent_widget_text_edit = new QGroupBox("Source code editor");
-    parent_widget_text_edit->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    parent_widget_text_edit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     QVBoxLayout* layout_text_edit = new QVBoxLayout();
     parent_widget_text_edit->setLayout(layout_text_edit);
 
     // add code tabs
     this->code_tabs = new QTabWidget();
+    //this->code_tabs->setMinimumWidth(720);
     this->code_tabs->setTabsClosable(true);
     connect(this->code_tabs, SIGNAL(tabCloseRequested(int)), this, SLOT(slot_close_file(int)));
     layout_text_edit->addWidget(this->code_tabs);
@@ -46,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     //-------------------------------------------------------------------------
     QGroupBox* hex_viewer_container = new QGroupBox("Machine code viewer");
     hex_viewer_container->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    hex_viewer_container->setMaximumWidth(680);
     QVBoxLayout* layout_hexviewer = new QVBoxLayout();
     hex_viewer_container->setLayout(layout_hexviewer);
     this->hex_viewer = new QHexView();
@@ -72,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // right screen -> log and upload interface
     //-------------------------------------------------------------------------
     QWidget* widget_right_screen_container = new QWidget();
-    widget_right_screen_container->setMaximumWidth(350);
+    widget_right_screen_container->setMaximumWidth(360);
     QVBoxLayout* widget_right_screen_layout = new QVBoxLayout();
     widget_right_screen_container->setLayout(widget_right_screen_layout);
 

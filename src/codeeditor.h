@@ -24,6 +24,10 @@ private:
     bool flag_changed = false;
 
 public:
+    /**
+     * @brief Custom class for code editing
+     * @param parent
+     */
     CodeEditor(QWidget *parent = nullptr);   
 
     bool has_changed() const {

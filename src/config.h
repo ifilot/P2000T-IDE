@@ -22,7 +22,7 @@
 #define CONFIG_H
 
 #define PROGRAM_NAME "P2000T-ide"
-#define PROGRAM_VERSION "0.10.2"
+#define PROGRAM_VERSION "0.10.3"
 #define PROGRAM_ORGANIZATION "RETROZWICK"
 #define PROGRAM_DOMAIN "retrozwick.nl"
 

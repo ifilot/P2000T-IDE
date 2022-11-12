@@ -13,11 +13,12 @@ m_pdata(NULL)
 {
     setFont(QFont("Courier", 10));
 
-#if QT_VERSION >= 0x051100
-    m_charWidth = fontMetrics().horizontalAdvance(QLatin1Char('9'));
-#else
-    m_charWidth = fontMetrics().width(QLatin1Char('9'));
-#endif
+    #if QT_VERSION >= 0x051100
+        m_charWidth = fontMetrics().horizontalAdvance(QLatin1Char('9'));
+    #else
+        m_charWidth = fontMetrics().width(QLatin1Char('9'));
+    #endif
+
     m_charHeight = fontMetrics().height();
 
     m_posAddr = 0;
@@ -25,25 +26,27 @@ m_pdata(NULL)
     m_posAscii = m_posHex + MIN_HEXCHARS_IN_LINE * m_charWidth + GAP_HEX_ASCII;
     m_bytesPerLine = MIN_BYTES_PER_LINE;
 
-    setMinimumWidth(m_posAscii + (MIN_BYTES_PER_LINE * m_charWidth));
+    // set width specific one level higher
+    //this->setMinimumWidth(m_posAscii + (MIN_BYTES_PER_LINE * m_charWidth));
+    //this->setMaximumWidth(m_posAscii + (MIN_BYTES_PER_LINE * m_charWidth));
 
-    setFocusPolicy(Qt::StrongFocus);
+    this->setFocusPolicy(Qt::StrongFocus);
 }
 
 
-QHexView::~QHexView()
-{
-    if(m_pdata)
+QHexView::~QHexView() {
+    if(m_pdata) {
         delete m_pdata;
+    }
 }
 
-void QHexView::setData(QHexView::DataStorage *pData)
-{
+void QHexView::setData(QHexView::DataStorage *pData) {
     QMutexLocker lock(&m_dataMtx);
 
     verticalScrollBar()->setValue(0);
-    if(m_pdata)
+    if(m_pdata) {
         delete m_pdata;
+    }
     m_pdata = pData;
     m_cursorPos = 0;
     resetSelection(0);
@@ -56,8 +59,7 @@ void QHexView::showFromOffset(std::size_t offset)
 {
     QMutexLocker lock(&m_dataMtx);
 
-    if(m_pdata && offset < m_pdata->size())
-    {
+    if(m_pdata && offset < m_pdata->size()) {
         updatePositions();
 
         setCursorPos(offset * 2);
