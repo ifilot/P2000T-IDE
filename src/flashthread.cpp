@@ -40,7 +40,7 @@ void FlashThread::flash_sst39sf0x0() {
         return;
     }
 
-    for(unsigned int i=0; i<64; i++) {
+    for(unsigned int i=0; i<(this->data.size() / 0x100); i++) {
         emit(flash_block_start(i));
 
         if(i % (0x1000 / 256) == 0) {

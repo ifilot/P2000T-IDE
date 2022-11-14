@@ -163,8 +163,14 @@ private slots:
 signals:
     void signal_emit_statusbar_message(const QString& str);
 
+    /**
+     * @brief Request that data is extracted from this widget and put into the hex viewer
+     */
     void signal_data_read();
 
+    /**
+     * @brief Request for data to be sent
+     */
     void signal_get_data();
 };
 

@@ -33,6 +33,7 @@ class ReadThread : public IOWorker {
     Q_OBJECT
 
 private:
+    unsigned int num_blocks = 64;
 
 public:
     ReadThread() {}
@@ -47,6 +48,14 @@ public:
      * class is runned
      */
     void run() override;
+
+    /**
+     * @brief Set the number of blocks
+     * @param _num_blocks
+     */
+    void set_num_blocks(unsigned int _num_blocks) {
+        this->num_blocks = _num_blocks;
+    }
 
 signals:
     /**

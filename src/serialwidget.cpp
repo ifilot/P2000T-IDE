@@ -203,12 +203,15 @@ void SerialWidget::flash_rom() {
     // perform data request
     this->signal_get_data();
 
-    // pad data with zeros
+    // to save time upon the relatively slow flashing procedure, the cartridge is padded with zeros to
+    // fill the last block and only the required number of blocks are uploaded rather than the full
+    // 64 blocks of $100 bytes each.
     QByteArray padding;
-    padding.fill(0, 0x4000 - this->flash_data.size());
+    unsigned int nrblocks = (this->flash_data.size() / 0x100) + 1;
+    padding.fill(0, 0x100 * nrblocks - this->flash_data.size());
     this->flash_data += padding;
 
-    this->progress_bar_load->setMaximum(64);
+    this->progress_bar_load->setMaximum(nrblocks);
     this->flashthread = std::make_unique<FlashThread>(this->serial_interface);
     this->flashthread->set_rom_slot(slot_id);
     this->flashthread->set_serial_port(this->combobox_serial_ports->currentText().toStdString());
@@ -235,7 +238,7 @@ void SerialWidget::flash_block_start(unsigned int page_id) {
  * @brief Slot to accept that a page is written
  */
 void SerialWidget::flash_block_done(unsigned int page_id) {
-    unsigned int num_pages = 64;
+    unsigned int num_pages = this->flash_data.size() / 0x100;
     double seconds_passed = (double)this->timer1.elapsed() / 1000.0;
     double seconds_per_page = seconds_passed / (double)(page_id+1);
     double seconds_remaining = seconds_per_page * (num_pages - page_id - 1);
@@ -260,8 +263,9 @@ void SerialWidget::flash_result_ready() {
 
     // set progress bar
     this->progress_bar_load->reset();
-    this->num_blocks = 64;
-    this->progress_bar_load->setMaximum(64);
+    this->num_blocks = this->flash_data.size() / 0x100;
+    this->readerthread->set_num_blocks(this->num_blocks);
+    this->progress_bar_load->setMaximum(this->num_blocks);
 
     connect(this->readerthread.get(), SIGNAL(read_result_ready()), this, SLOT(verify_result_ready()));
     connect(this->readerthread.get(), SIGNAL(read_block_start(uint)), this, SLOT(verify_block_start(uint)));
@@ -315,6 +319,8 @@ void SerialWidget::verify_result_ready() {
 
     if(verify_data == this->flash_data) {
         this->signal_emit_statusbar_message("Ready - Done verification in " + QString::number((double)this->timer1.elapsed() / 1000) + " seconds.");
+        this->data = this->flash_data;
+        emit(signal_data_read());
         QMessageBox msg_box(QMessageBox::Information,
                 "Flash complete",
                 "Cartridge was successfully flashed. Data integrity verified.",
