@@ -11,24 +11,27 @@ void ThreadTL866::run() {
     connect(this->process, SIGNAL(readyReadStandardOutput()), this, SLOT(slot_parse_output()));
 
     this->process->start();
-    qDebug() << "Run process launched";
+    qDebug() << "TL866 process launched";
     if(this->process->waitForStarted(1000)) {
-        qDebug() << "Run process started";
+        qDebug() << "TL866 process started";
         if(this->process->waitForFinished(60 * 60 * 1000)) { // timeout at one hour
-            qDebug() << "Run process finished";
+            qDebug() << "TL866 process finished";
+            qDebug() << "Exit code: " << this->process->exitCode();
         } else {
             qCritical() << "Run process did not finish";
         }
 
-        if(this->operation == 0) {
+        if(this->process->exitCode() != 0) {
+            qCritical("TL866 process gave an error, see output log.");
+        } else if(this->operation == 0) {
+            qDebug() << "Try reading output file.";
             QFile mcodefile(process->workingDirectory() + "/read.bin");
-            if(mcodefile.open(QIODevice::ReadOnly)) {
+            if(mcodefile.exists() && mcodefile.open(QIODevice::ReadOnly)) {
                 this->data = mcodefile.readAll();
             } else {
                 throw std::runtime_error("Could not read data file.");
             }
         }
-
     } else {
         qCritical() << "Run process did not launch";
         qCritical() << this->process->errorString();
@@ -123,7 +126,7 @@ void ThreadTL866::slot_parse_output() {
             auto result = match_iterator.next();
             if(!match_iterator.hasNext()) {
                 int perc = result.captured(0).remove("%").toInt();
-                emit(signal_progress(perc));
+                emit(this->signal_progress(perc));
             }
         }
     }

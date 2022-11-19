@@ -128,16 +128,25 @@ void SerialInterface::erase_sector(unsigned int sector_id) {
 void SerialInterface::burn_block(unsigned int sector_addr, const QByteArray& data) {
     try {
         qDebug() << "Burning block.";
-        std::string command = (boost::format("WRBK%04X") % sector_addr).str();
-        this->send_command(command);
-        this->port->write(data, 256);
-        while(this->port->waitForBytesWritten(SERIAL_TIMEOUT_BLOCK)){}
 
         // calculate checksum
         uint8_t checksum = 0;
         for(int i=0; i<data.size(); i++) {
             checksum += data[i];
         }
+
+        // display which checksum to expect
+        qDebug() << QString("Expecting checksum: 0x%1").arg(checksum, 2, 16).toStdString().c_str();
+
+        // construct command
+        std::string command = (boost::format("WRBK%04X") % sector_addr).str();
+
+        // send command to serial interface
+        this->send_command(command);
+
+        this->port->write(data, 256);
+        while(this->port->waitForBytesWritten(SERIAL_TIMEOUT_BLOCK)){}
+
         this->wait_for_response(1);
         auto response = this->port->readAll();
 
@@ -296,7 +305,7 @@ void SerialInterface::wait_for_response(int nrbytes) {
         bytes_available = this->port->bytesAvailable();
 
         // if counter reaches a maximum number of tries, terminate the procedure
-        if(ctr > 100) {
+        if(ctr > 10) {
             qDebug() << "Failed to capture response, outputting buffer:";
             qDebug() << this->port->readAll();
             throw std::runtime_error("Too many tries waiting for response to command, terminating.");

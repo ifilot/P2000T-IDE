@@ -28,6 +28,7 @@
 #include "codeeditor.h"
 #include "tl866widget.h"
 #include "searchwidget.h"
+#include "fileallocationtablep2000t.h"
 
 class MainWindow : public QMainWindow
 {
@@ -228,5 +229,10 @@ private slots:
      * @brief Close tab
      */
     void slot_close_tab();
+
+    /**
+     * @brief Analyze hexcode as if it is FAT P2000T FAT
+     */
+    void slot_analyze_fat_p2000t();
 };
 #endif // MAINWINDOW_H

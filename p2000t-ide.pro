@@ -12,6 +12,7 @@ SOURCES += \
     src/dialogslotselection.cpp \
     src/assemblyhighlighter.cpp \
     src/codeeditor.cpp \
+    src/fileallocationtablep2000t.cpp \
     src/flashthread.cpp \
     src/ioworker.cpp \
     src/main.cpp \
@@ -31,6 +32,7 @@ HEADERS += \
     src/assemblyhighlighter.h \
     src/codeeditor.h \
     src/config.h \
+    src/fileallocationtablep2000t.h \
     src/flashthread.h \
     src/ioworker.h \
     src/mainwindow.h \

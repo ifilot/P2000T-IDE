@@ -200,6 +200,12 @@ void MainWindow::build_menu() {
     menuEdit->addAction(action_search);
     connect(action_search, SIGNAL(triggered()), this->search_widget, SLOT(show_search_widget()));
 
+    // analyze rom
+    QAction *action_analyze_fatp2000t = new QAction(menuEdit);
+    action_analyze_fatp2000t->setText(tr("Analyze as FAT-p2000t"));
+    menuEdit->addAction(action_analyze_fatp2000t);
+    connect(action_analyze_fatp2000t, SIGNAL(triggered()), this, SLOT(slot_analyze_fat_p2000t()));
+
     /*
      * Build menu
      */
@@ -840,4 +846,12 @@ void MainWindow::slot_toggletab_backward() {
 void MainWindow::slot_close_tab() {
     int curid = this->code_tabs->currentIndex();
     this->code_tabs->tabCloseRequested(curid);
+}
+
+/**
+ * @brief Analyze hexcode as if it is FAT P2000T FAT
+ */
+void MainWindow::slot_analyze_fat_p2000t() {
+    qDebug() << "Analyzing FAT P2000T";
+    FileAllocationTableP2000t fatp2k(this->hex_viewer->get_data());
 }

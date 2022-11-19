@@ -46,7 +46,12 @@ void FlashThread::flash_sst39sf0x0() {
         if(i % (0x1000 / 256) == 0) {
             this->serial_interface->erase_sector(this->slot_id * 64 + i);
         }
-        this->serial_interface->burn_block(this->slot_id * 64 + i, this->data.mid(i * 256, 256));
+
+        try {
+           this->serial_interface->burn_block(this->slot_id * 64 + i, this->data.mid(i * 256, 256));
+        }  catch (std::exception& e) {
+           qCritical() << "Received error: " << e.what();
+        }
 
         emit(flash_block_done(i));
     }
