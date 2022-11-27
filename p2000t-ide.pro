@@ -19,6 +19,7 @@ SOURCES += \
     src/mainwindow.cpp \
     src/qhexview.cpp \
     src/readthread.cpp \
+    src/romwidget.cpp \
     src/searchwidget.cpp \
     src/serial_interface.cpp \
     src/serialwidget.cpp \
@@ -38,6 +39,7 @@ HEADERS += \
     src/mainwindow.h \
     src/qhexview.h \
     src/readthread.h \
+    src/romwidget.h \
     src/searchwidget.h \
     src/serial_interface.h \
     src/serialwidget.h \

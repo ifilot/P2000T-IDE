@@ -28,7 +28,7 @@
 #include "codeeditor.h"
 #include "tl866widget.h"
 #include "searchwidget.h"
-#include "fileallocationtablep2000t.h"
+#include "romwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -42,6 +42,7 @@ private:
 
     // hex widget / info
     QHexView* hex_viewer;
+    RomWidget* rom_widget;
     QLabel* label_machine_code_data;
     QProgressBar* progressbar_storage;
 

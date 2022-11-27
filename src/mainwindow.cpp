@@ -65,9 +65,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     layout_hexinfo->addWidget(this->label_machine_code_data);
     layout_hexinfo->addWidget(this->progressbar_storage);
 
+    // rom gui
+    this->rom_widget = new RomWidget();
+    this->rom_widget->setVisible(false);
+
     // add widgets to middle level container
     layout_hexviewer->addWidget(widget_hexinfo);
     layout_hexviewer->addWidget(this->hex_viewer);
+    layout_hexviewer->addWidget(this->rom_widget);
     top_layout->addWidget(hex_viewer_container);
 
     //-------------------------------------------------------------------------
@@ -853,5 +858,6 @@ void MainWindow::slot_close_tab() {
  */
 void MainWindow::slot_analyze_fat_p2000t() {
     qDebug() << "Analyzing FAT P2000T";
-    FileAllocationTableP2000t fatp2k(this->hex_viewer->get_data());
+    this->rom_widget->set_data(this->hex_viewer->get_data());
+    this->rom_widget->setVisible(true);
 }
