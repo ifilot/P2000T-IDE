@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import colorama
+from colorama import Fore, Style
+
 def main():
-    f = open('drive.bin', 'rb')
+    f = open('tape01-06.bin', 'rb')
     data = bytearray(f.read())
     f.close()
     
@@ -21,13 +24,20 @@ def scan_bank_metadata_blocks(data):
     
     return startblocks
 
-def print_metadata(metadata, blocklist):
+def print_metadata(metadata, blocklist, valid=True):
     
     blocklistformatted = "->".join(["%02i.%02i" % x for x in blocklist])
     
-    print("%s | %s | %02i | %s" % \
+    validflag = ""
+    if valid:
+        validflag = Fore.GREEN + "✓" + Style.RESET_ALL
+    else:
+        validflag = Fore.RED + "✗" + Style.RESET_ALL
+    
+    print("%s | %s | %s | %02i | %s" % \
           (metadata['filename'],
            metadata['extension'],
+           validflag,
            metadata['total_blocks'],
            blocklistformatted))
 
@@ -61,9 +71,9 @@ def parse_file(data, bank=0, block=0):
                                 metadata['next_block'])
     
     if metadata['total_blocks'] != nrblocks:
-        print('Invalid number of blocks encountered for: %s' % metadata['filename'])
-    
-    print_metadata(metadata,blocks)
+        print_metadata(metadata,blocks,valid=False)
+    else:
+        print_metadata(metadata,blocks)    
     
     # returning last bank and block
     return lastbank, lastblock
@@ -80,7 +90,7 @@ def readmetadata(data, bank=0, block=0):
         return None
     
     # read descriptor
-    filename = data[start+0x26:start+0x2D]+data[start+0x37:start+0x3E]
+    filename = data[start+0x26:start+0x2E]+data[start+0x37:start+0x3E]
     filename = filename.decode('utf8')
     
     # read current bank
